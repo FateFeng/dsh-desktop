@@ -1,7 +1,15 @@
 /** DSH Desktop Host plugin: owns the selected native shell generation. */
 
 import type { IncomingMessage, ServerResponse } from 'node:http'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { resolveDshHome } from '@deepseek-ai/dsh-home-paths'
+import type {} from '@deepseek-ai/dsh-fs'
+import type {} from '@deepseek-ai/dsh-sandbox'
+import type {} from '@deepseek-ai/dsh-sandbox-policy'
+import type {} from '@deepseek-ai/dsh-api-workspace-files'
+import type {} from '@deepseek-ai/dsh-agent'
+import type {} from '@deepseek-ai/dsh-file-reference'
 import type { Context } from '@deepseek-ai/cordis'
 import type {} from '@deepseek-ai/dsh-cmdline'
 import type {} from '@deepseek-ai/dsh-host-webserver'
@@ -20,6 +28,13 @@ import {
   handleDesktopDirectoryPickerRequest,
   handleDesktopDirectoryValidationRequest,
 } from './directory-picker-route.ts'
+import {
+  DESKTOP_WORKSPACE_SOURCES_PATH,
+  handleDesktopWorkspaceSourcesRequest,
+} from './workspace-source-route.ts'
+import { WorkspaceSourceRoots } from './workspace-source-roots.ts'
+import { installWorkspaceSourcePolicy } from './workspace-source-policy.ts'
+import { installWorkspaceSourceFileReferences } from './workspace-source-file-references.ts'
 import {
   DESKTOP_DIAGNOSTICS_EXPORT_PATH,
   DESKTOP_DEVELOPER_TOOLS_TOGGLE_PATH,
@@ -209,6 +224,49 @@ export function apply(ctx: Context, config: DesktopShellConfig): void {
   let setupSettings: DesktopSetupWizardSettings | undefined
   let setupSaved = false
   const rendererOrigin = `http://127.0.0.1:${String(ctx.webServer.port)}`
+  const sourceRoots = new WorkspaceSourceRoots(join(resolveDshHome(), 'desktop-workspace-sources.json'))
+  ctx.effect(
+    () => ctx.webServer.register({
+      kind: 'exact',
+      path: DESKTOP_WORKSPACE_SOURCES_PATH,
+      handler: (req, res) => {
+        if (rejectDesktopRequest(ctx, req, res)) return
+        return handleDesktopWorkspaceSourcesRequest(
+          req,
+          res,
+          rendererOrigin,
+          sourceRoots,
+          () => runtime.pickDirectory(),
+          path => runtime.validateDirectory(path),
+          runtime.platform,
+        )
+      },
+    }),
+    'dsh-plugin-desktop: workspace sources route',
+  )
+  ctx.inject(['sandbox', 'fs', 'sandboxPolicy', 'workspaceFiles'], (scope) => {
+    scope.effect(
+      () => installWorkspaceSourcePolicy(
+        scope.sandbox,
+        scope.fs,
+        scope.workspaceFiles,
+        () => scope.sandboxPolicy.resolve(),
+        sourceRoots,
+        runtime.platform,
+      ),
+      'dsh-plugin-desktop: workspace source authorization and file-browser roots',
+    )
+  })
+  ctx.inject(['agents', 'fileReferences'], (scope) => {
+    const references = installWorkspaceSourceFileReferences(scope.fileReferences, sourceRoots, runtime.platform)
+    scope.on('session/event', (session, event) => {
+      if (event.type !== 'tool/result') return
+      const agent = scope.agents.get(session.id)
+      if (agent !== undefined) references.invalidate(agent)
+    })
+    scope.on('agent/disposed', ({ agent }) => { references.disposeAgent(agent) })
+    scope.effect(() => () => { references.dispose() }, 'dsh-plugin-desktop: attached-root @ references')
+  })
   const copilotAuthorization = new DesktopCopilotAuthorizationController(authorization, credentials)
   const copilotAuthorizationRoutes = [
     [DESKTOP_COPILOT_AUTHORIZATION_PATH, handleDesktopCopilotAuthorizationReadRequest],
@@ -320,26 +378,26 @@ export function apply(ctx: Context, config: DesktopShellConfig): void {
     }),
     'dsh-plugin-desktop: renderer boot report route',
   )
+  ctx.effect(
+    () => ctx.webServer.register({
+      kind: 'exact',
+      path: DESKTOP_DIRECTORY_PICKER_PATH,
+      handler: (req, res) => {
+        if (rejectDesktopRequest(ctx, req, res)) return
+        return handleDesktopDirectoryPickerRequest(
+          req,
+          res,
+          rendererOrigin,
+          () => runtime.pickDirectory(),
+          cause => {
+            ctx.logger.error(`dsh-plugin-desktop: native directory picker failed: ${cause instanceof Error ? cause.message : String(cause)}`)
+          },
+        )
+      },
+    }),
+    'dsh-plugin-desktop: native directory picker route',
+  )
   if (runtime.platform === 'win32') {
-    ctx.effect(
-      () => ctx.webServer.register({
-        kind: 'exact',
-        path: DESKTOP_DIRECTORY_PICKER_PATH,
-        handler: (req, res) => {
-          if (rejectDesktopRequest(ctx, req, res)) return
-          return handleDesktopDirectoryPickerRequest(
-            req,
-            res,
-            rendererOrigin,
-            () => runtime.pickDirectory(),
-            cause => {
-              ctx.logger.error(`dsh-plugin-desktop: native directory picker failed: ${cause instanceof Error ? cause.message : String(cause)}`)
-            },
-          )
-        },
-      }),
-      'dsh-plugin-desktop: native directory picker route',
-    )
     ctx.effect(
       () => ctx.webServer.register({
         kind: 'exact',

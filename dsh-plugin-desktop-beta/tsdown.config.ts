@@ -29,6 +29,7 @@ export default defineConfig([
       'update-checker': 'src/update-checker.ts',
       'update-download': 'src/update-download.ts',
       updates: 'src/updates.ts',
+      'android-logcat': 'src/android-logcat.ts',
       'windows-pwsh-sandbox': 'src/windows-pwsh-sandbox.ts',
       'windows-acl-runner': 'src/windows-acl-runner.ts',
       main: 'src/main.ts',

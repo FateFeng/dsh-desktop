@@ -1,6 +1,6 @@
 # DSH Desktop repository rules
 
-This repository owns the desktop product around an unmodified DeepSeek Harness checkout.
+This repository owns the desktop product around a pinned DeepSeek Harness checkout; local upstream edits use the isolated overlay workflow below.
 
 ## Prerequisites and setup
 
@@ -20,8 +20,8 @@ This repository owns the desktop product around an unmodified DeepSeek Harness c
 - `corepack yarn dev:next` explicitly launches the experimental Next app; `corepack yarn check:next` validates it without a graphical application. Next uses the official published Web frontend and the recorded upstream Desktop presentation, with product capabilities composed as a separate bundle.
 - Develop and validate Desktop feature changes in `dsh-plugin-desktop-beta/` first, then synchronize shared changes into `dsh-plugin-desktop/` while preserving declared variant differences. Before committing or pushing shared Desktop changes, run `corepack yarn check:desktop-variants` and validate both affected packages; neither package automatically inherits the other's source edits.
 - Run upstream operations through the root scripts, such as `corepack yarn upstream:build`.
-
-- `deepseek-harness/` is a pinned upstream Git submodule. Never edit files inside it from a desktop feature branch.
+- `deepseek-harness/` remains a pinned upstream Git submodule with its own pnpm workspace. Do not publish local source edits or rewrite the official pin as a local-build shortcut. If the submodule is dirty or checked out at a non-pinned commit, Stable/Beta `build` automatically runs `scripts/prepare-local-runtime.mjs`: it builds and packs the current local source into ignored `deepseek-harness/dist/local-runtime/`, overlays the result into each channel's package-local `node_modules`, and records a source fingerprint. This does not change `vendor/dsh-runtime`, `upstream.json`, Yarn resolutions, or `yarn.lock`. A clean pinned checkout restores any prior local overlay. CI refuses local overlays; release builds must use the recorded upstream pin.
+- Keep local upstream source edits local unless the user explicitly asks to update the upstream submodule pin and release artifacts.
 - `dsh-plugin-desktop/` owns the Cordis Host and Client faces, Electron bootstrap, packaging, and release tests.
 - `dsh-desktop-next/` owns the separate experimental Desktop shell, Profiles and recovery, and adapters for the existing AA bridge and Community Market. Next-only changes do not belong in the Stable/Beta variant mirror. Keep its upstream reference and published runtime versions aligned; do not fork the official main frontend.
 - `dsh-community-fabric/` owns the community interoperability RFC. Until schemas and a reviewed reference adapter exist, it remains a private documentation scaffold and must not declare loadable DSH or package entry points.

@@ -12,10 +12,11 @@ function options(overrides: Partial<LinuxPackageOptions> = {}): LinuxPackageOpti
     arch: 'x64',
     nodeVersion: '24.17.0',
     workspaceRoot: '/workspace',
-    desktopRoot: '/workspace/dsh-plugin-desktop',
+    desktopRoot: '/workspace/dsh-plugin-desktop-beta',
     builderCli: '/workspace/node_modules/electron-builder/cli.js',
+    builderRunner: '/workspace/dsh-plugin-desktop-beta/scripts/electron-builder-cli.cjs',
     prepareRuntime: vi.fn(),
-    verifier: '/workspace/dsh-plugin-desktop/scripts/verify-linux-artifacts.ts',
+    verifier: '/workspace/dsh-plugin-desktop-beta/scripts/verify-linux-artifacts.ts',
     nodeExecutable: '/node/bin/node',
     run: vi.fn(),
     log: () => {},
@@ -34,6 +35,8 @@ describe('Linux packaging orchestration', () => {
 
     expect(run).toHaveBeenCalledTimes(3)
     expect(order[0]).toBe('yarn workspace dsh-plugin-desktop-beta check:linux-package')
+    expect(order[1]).toContain('electron-builder-cli.cjs')
+    expect(order[1]).toContain('node_modules/electron-builder/cli.js')
     expect(order[1]).toContain('--linux')
     expect(order[1]).toContain('AppImage')
     expect(order[1]).toContain('deb')

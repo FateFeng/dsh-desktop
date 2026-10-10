@@ -48,6 +48,7 @@ import type { DesktopRuntime, DesktopShellSpec } from '../src/runtime.ts'
 import type { DesktopPlatformLoginRequest, PlatformLoginAccount } from '../src/platform-login.ts'
 import { createDesktopBrowserAccess } from '../src/desktop-browser-access.ts'
 import { DESKTOP_LAN_HTTPS_CA_PATH, DesktopLanHttpsRuntime } from '../src/lan-https-runtime.ts'
+import { DESKTOP_WORKSPACE_SOURCES_PATH } from '../src/workspace-source-route.ts'
 import { RENDERER_BOOT_REPORT_PATH, type RendererBootReport } from '../src/renderer-boot-contract.ts'
 
 /** Loader entry id dsh 0.1.7-alpha.1 keys the Desktop shell's settings by. */
@@ -264,6 +265,30 @@ function createHarness(
   const ctx = {
     fiber,
     desktopRuntime: runtime,
+    sandbox: {
+      confine: vi.fn(async (argv: string[]) => ({
+        argv,
+        enforcement: 'full',
+        denialSignatures: [],
+        runnerFailureRules: [],
+      })),
+    },
+    fs: {
+      resolve: vi.fn(async (path: string) => path),
+      contains: vi.fn(() => false),
+      writeText: vi.fn(),
+      editText: vi.fn(),
+    },
+    sandboxPolicy: { resolve: vi.fn(() => ({ mode: 'danger-full-access' })) },
+    workspaceFiles: {
+      read: vi.fn(),
+      readBytes: vi.fn(),
+      stat: vi.fn(),
+      list: vi.fn(),
+      changes: vi.fn(),
+    },
+    fileReferences: { list: vi.fn(async () => []) },
+    agents: { get: vi.fn() },
     webServer: {
       host: '127.0.0.1',
       port: 43120,
@@ -557,6 +582,7 @@ describe('desktop Host plugin', () => {
       RENDERER_BOOT_REPORT_PATH,
       DESKTOP_DIRECTORY_PICKER_PATH,
       DESKTOP_DIRECTORY_VALIDATOR_PATH,
+      DESKTOP_WORKSPACE_SOURCES_PATH,
     ].sort()
     const routes = harness.routes().filter(route => route.path !== DESKTOP_LAN_HTTPS_CA_PATH)
     expect(routes.map(route => route.path).sort()).toEqual(expectedPaths)

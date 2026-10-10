@@ -1,6 +1,8 @@
 import { createElement } from 'react'
 import { describe, expect, it } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { vi } from 'vitest'
+import { installSidebarFooterStyles } from '../src/client/sidebar-footer-styles.ts'
 
 function renderFooterContract(wide: boolean) {
   return renderToStaticMarkup(
@@ -50,5 +52,23 @@ describe('desktop sidebar footer reproduction', () => {
     expect(markup).toContain('>P<')
     expect(markup).toContain('>U<')
     expect(markup).toContain('>S<')
+    expect(markup).toContain('class="footerActions"><div data-slot="sidebar.footer.action"')
+  })
+
+  it('sizes the outer footer wrapper so a collapsed Logcat launcher can reach the rail left edge', () => {
+    const style = { id: '', dataset: {} as Record<string, string>, textContent: '', remove: vi.fn() }
+    vi.stubGlobal('document', {
+      getElementById: () => null,
+      createElement: () => style,
+      head: { appendChild: vi.fn() },
+    })
+    try {
+      const dispose = installSidebarFooterStyles()
+      expect(style.textContent).toMatch(/body div:has\(> \[data-slot="sidebar\.footer\.action"\]\) \{\s*width: 100% !important;\s*justify-content: flex-start !important;/)
+      expect(style.textContent).toMatch(/body \[data-slot="sidebar\.footer\.action"\] > button\.dshAndroidLogcatLauncher \{\s*align-self: flex-start !important;\s*width: max-content !important;\s*justify-content: flex-start !important;/)
+      dispose()
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
 })

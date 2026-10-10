@@ -3,6 +3,8 @@ import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type {} from '@deepseek-ai/dsh-client-ui-session/client'
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
 import type {} from '@deepseek-ai/dsh-api-session-controller/remote'
+import type {} from '@deepseek-ai/dsh-client-ui-sidebar-files/client'
+import type {} from '@deepseek-ai/dsh-client-ui-sidebar-right/client'
 import type {} from '@deepseek-ai/cordis-plugin-loader'
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 // Type-only service and SlotMap convergence for the Desktop settings section.
@@ -20,6 +22,15 @@ import './onboarding.css'
 import { applyAdvancedShell } from './advanced-shell.ts'
 import { startRendererBootReporter } from './boot-health.ts'
 import { applyDesktopSettings } from './desktop-settings.ts'
+import { AndroidLogcatDrawer } from './AndroidLogcatDrawer.tsx'
+import { AndroidLogcatLauncher } from './AndroidLogcatLauncher.tsx'
+import {
+  ANDROID_LOGCAT_LOCALE_NAMESPACE,
+  androidLogcatEn,
+  androidLogcatZh,
+} from './android-logcat-locales.ts'
+import { createAndroidLogcatStore } from './android-logcat-store.ts'
+import { installAndroidLogcatStyles } from './android-logcat-styles.ts'
 import { installDesktopDirectoryPickerBridge } from './directory-picker.ts'
 import { parseDesktopClientEnvironment } from './environment.ts'
 import { applyExtendedShell } from './extended-shell.ts'
@@ -27,6 +38,7 @@ import { installDesktopLaunchWorkspaceBridge } from './launch-workspace.ts'
 import { applyDesktopFileContextMenu } from './desktop-file-context-menu.tsx'
 import { DESKTOP_SETTINGS_FORMS_SERVICE } from './settings-bridge.ts'
 import { installSidebarFooterStyles } from './sidebar-footer-styles.ts'
+import { applyDesktopWorkspaceSources } from './WorkspaceSources.tsx'
 import { desktopWindowService, provideDesktopWindow } from './window-service.ts'
 
 export { applyAdvancedShell } from './advanced-shell.ts'
@@ -131,12 +143,37 @@ export const inject = [
 export function apply(ctx: ClientContext): void {
   const environment = parseDesktopClientEnvironment(window.location.search)
   if (!environment) return
+  const androidLogcatStore = createAndroidLogcatStore()
+  ctx.effect(
+    () => ctx.locale.register(ANDROID_LOGCAT_LOCALE_NAMESPACE, { zh: androidLogcatZh, en: androidLogcatEn }),
+    'dsh-plugin-desktop: android logcat dictionaries',
+  )
+  ctx.effect(
+    () => installAndroidLogcatStyles('dsh-plugin-desktop-beta'),
+    'dsh-plugin-desktop: android logcat styles',
+  )
+  ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register({
+    name: 'sidebar.footer.action',
+    id: 'desktop-android-logcat',
+    order: 30,
+    label: () => ctx.locale.bind(ANDROID_LOGCAT_LOCALE_NAMESPACE)('launcher'),
+    locale: ANDROID_LOGCAT_LOCALE_NAMESPACE,
+    store: androidLogcatStore,
+  }, AndroidLogcatLauncher))
+  ctx.slots.inject('shell.overlay', () => ctx.slots.register({
+    name: 'shell.overlay',
+    id: 'desktop-android-logcat',
+    order: 30,
+    locale: ANDROID_LOGCAT_LOCALE_NAMESPACE,
+    store: androidLogcatStore,
+  }, AndroidLogcatDrawer))
   ctx.effect(
     () => provideDesktopWindow(ctx, desktopWindowService(environment)),
     'dsh-plugin-desktop: native window geometry service',
   )
   const desktopSettings = applyDesktopSettings(ctx, environment)
   applyDesktopFileContextMenu(ctx)
+  applyDesktopWorkspaceSources(ctx, environment.platform)
   registerDesktopOnboarding(ctx, (snapshot, locale, finish, renderNavigation) => createElement<{ embedded?: EmbeddedSetupWizard }>(SetupWizardApp, {
     embedded: { input: snapshot.input, locale, renderNavigation, finish: selection => finish(snapshot.profile, selection) },
   }))

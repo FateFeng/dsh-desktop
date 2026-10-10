@@ -15,7 +15,7 @@
     "dsh-community-market"
   ],
   "resolutions": {
-    "@agents-anywhere/dsh-bridge-next": "patch:@agents-anywhere/dsh-bridge-next@file%3Avendor/agents-anywhere/agents-anywhere-dsh-bridge-next-2.0.3-desktop.c7df5b31f3fe2.r156e8f86.tgz#./patches/agents-anywhere-connector-httpx.patch",
+    "@agents-anywhere/dsh-bridge-next": "patch:@agents-anywhere/dsh-bridge-next@file%3Avendor/agents-anywhere/agents-anywhere-dsh-bridge-next-2.0.3-desktop.c7fe1fce32650.r156e8f86.tgz#./patches/agents-anywhere-connector-httpx.patch",
     "app-builder-lib@npm:26.15.7": "patch:app-builder-lib@npm%3A26.15.7#./patches/app-builder-lib@26.15.7.patch",
     "open@npm:11.0.1": "patch:open@npm%3A11.0.1#./patches/open@11.0.1.patch",
     "open@npm:^11.0.0": "patch:open@npm%3A11.0.1#./patches/open@11.0.1.patch",
@@ -660,7 +660,7 @@
     "@deepseek-ai/dsh-web-search-exa@npm:^0.2.0-rc.2": "file:vendor/dsh-runtime/0.2.0-rc.2/deepseek-ai-dsh-web-search-exa-0.2.0-rc.2.tgz",
     "@deepseek-ai/dsh-web-search-perplexity@npm:0.2.0-rc.2": "file:vendor/dsh-runtime/0.2.0-rc.2/deepseek-ai-dsh-web-search-perplexity-0.2.0-rc.2.tgz",
     "@deepseek-ai/dsh-web-search-perplexity@npm:^0.2.0-rc.2": "file:vendor/dsh-runtime/0.2.0-rc.2/deepseek-ai-dsh-web-search-perplexity-0.2.0-rc.2.tgz",
-    "dshmarket@npm:1.66.8": "patch:dshmarket@npm%3A1.66.8#./.yarn/patches/dshmarket-desktop.patch"
+    "dshmarket@npm:1.66.14": "patch:dshmarket@npm%3A1.66.14#./.yarn/patches/dshmarket-desktop.patch"
   },
   "dependenciesMeta": {
     "@deepseek-ai/dsh-subprocess-local": {
@@ -714,8 +714,10 @@
     "upstream:version": "cd deepseek-harness && corepack pnpm --version",
     "upstream:install": "cd deepseek-harness && CI=true corepack pnpm install --frozen-lockfile",
     "upstream:build": "cd deepseek-harness && corepack pnpm run build",
+    "upstream:build:lib": "cd deepseek-harness && corepack pnpm run build:lib",
     "upstream:build:official": "cd deepseek-harness && CI=true DSH_BUILD_CLIENT_PROFILE=official corepack pnpm run build",
     "upstream:pack:dsh": "cd deepseek-harness && CI=true corepack pnpm run release:pack --family dsh",
+    "upstream:pack:dsh:local": "cd deepseek-harness && CI=true corepack pnpm run release:pack --family dsh --out dist/local-runtime/npm",
     "upstream:prepare-runtime": "yarn upstream:install && yarn upstream:build:official && yarn upstream:pack:dsh",
     "dev:beta": "yarn market:prepare && yarn aa:prepare-release && yarn workspace dsh-community-market build && yarn workspace dsh-plugin-desktop-beta dev",
     "start:beta": "yarn market:prepare && yarn workspace dsh-plugin-desktop-beta start",

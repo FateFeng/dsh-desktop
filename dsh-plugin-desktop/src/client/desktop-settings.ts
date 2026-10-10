@@ -8,7 +8,7 @@ import { DesktopSettingsSection, type DesktopNotificationSettings, type DesktopS
 import { DesktopTerminalSettingsAction } from './DesktopTerminalSettingsAction.tsx'
 import { CopilotProviderCard } from './CopilotProviderCard.tsx'
 import { createDesktopSettingsApi } from './desktop-settings-api.ts'
-import { en, zh, type DesktopSettingsLocaleKey } from './desktop-settings-locales.ts'
+import { en, zh } from './desktop-settings-locales.ts'
 import { installDesktopSettingsStyles } from './desktop-settings-styles.ts'
 import type { DesktopClientEnvironment } from './environment.ts'
 import {
@@ -55,13 +55,6 @@ export async function persistDesktopModeSelection(
   await desktopSettings.set('networkExposure', 'loopback')
   await desktopSettings.set('openBrowser', false)
   await desktopSettings.set('mode', mode)
-}
-
-declare module '@deepseek-ai/dsh-client-ui-slots' {
-  interface LocaleNamespaceMap {
-    /** Desktop-only settings page copy. */
-    'desktop.settings': DesktopSettingsLocaleKey
-  }
 }
 
 /** Register the Desktop page in the settings.section list slot. */

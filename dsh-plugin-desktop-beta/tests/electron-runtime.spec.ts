@@ -40,7 +40,7 @@ const childProcess = vi.hoisted(() => {
   }
 })
 
-const MAIN_WINDOW_STATE_PATH = '/tmp/dsh-desktop-user-data/main-window-state.json'
+const MAIN_WINDOW_STATE_PATH = '/tmp/dsh-desktop-beta-user-data/main-window-state.json'
 const PRODUCT_VERSION = (JSON.parse(
   readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
 ) as { readonly version: string }).version
@@ -231,9 +231,9 @@ const electron = vi.hoisted(() => {
       getLocale: vi.fn(() => 'en-US'),
       getPreferredSystemLanguages: vi.fn(() => ['en-US']),
       getPath: vi.fn((name: string) => {
-        if (name === 'crashDumps') return '/tmp/dsh-desktop-user-data/Crashpad'
+        if (name === 'crashDumps') return '/tmp/dsh-desktop-beta-user-data/Crashpad'
         if (name === 'downloads') return '/tmp/Downloads'
-        return '/tmp/dsh-desktop-user-data'
+        return '/tmp/dsh-desktop-beta-user-data'
       }),
       getVersion: vi.fn(() => '43.4.0'),
       isPackaged: false,
@@ -698,7 +698,7 @@ describe('Electron desktop runtime', () => {
     vi.useFakeTimers()
     vi.spyOn(process, 'platform', 'get').mockReturnValue('win32')
     const { FileMainWindowStateStore } = await import('../src/main-window-state.ts')
-    const store = new FileMainWindowStateStore('/tmp/dsh-desktop-user-data')
+    const store = new FileMainWindowStateStore('/tmp/dsh-desktop-beta-user-data')
     store.write({ x: 260, y: 140, width: 1440, height: 900 })
     const { ElectronDesktopRuntime } = await import('../src/electron-runtime.ts')
     const runtime = new ElectronDesktopRuntime(async () => {})
@@ -736,7 +736,7 @@ describe('Electron desktop runtime', () => {
   it('fits stale saved bounds into the current display work area', async () => {
     vi.spyOn(process, 'platform', 'get').mockReturnValue('darwin')
     const { FileMainWindowStateStore } = await import('../src/main-window-state.ts')
-    const store = new FileMainWindowStateStore('/tmp/dsh-desktop-user-data')
+    const store = new FileMainWindowStateStore('/tmp/dsh-desktop-beta-user-data')
     const stale = { x: 5_000, y: -2_000, width: 2_000, height: 1_400 }
     store.write(stale)
     electron.screen.getDisplayMatching.mockReturnValueOnce({
@@ -833,9 +833,10 @@ describe('Electron desktop runtime', () => {
     expect(electron.trays[0]?.off).toHaveBeenCalledWith('click', expect.any(Function))
   })
 
-  it('selects the restricted Linux platform adapter once for native capabilities', async () => {
+  it('selects the restricted Linux adapter and permits native directory picking', async () => {
     vi.spyOn(process, 'platform', 'get').mockReturnValue('linux')
     electron.app.isPackaged = true
+    electron.dialog.showOpenDialog.mockResolvedValue({ canceled: false, filePaths: ['/home/test/Work'] })
     const { ElectronDesktopRuntime } = await import('../src/electron-runtime.ts')
     const runtime = new ElectronDesktopRuntime(async () => {})
     const release = runtime.schedule(spec)
@@ -845,7 +846,11 @@ describe('Electron desktop runtime', () => {
     expect(runtime.platform).toBe('linux')
     expect(electron.contentViews).toHaveLength(0)
     expect(runtime.updates.canDownload).toBe(false)
-    await expect(runtime.pickDirectory()).rejects.toThrow('native workspace picker is unavailable on linux')
+    await expect(runtime.pickDirectory()).resolves.toBe('/home/test/Work')
+    expect(electron.dialog.showOpenDialog).toHaveBeenCalledWith(electron.browserWindows[0], {
+      title: 'Select Workspace Directory',
+      properties: ['openDirectory', 'dontAddToRecent'],
+    })
     expect(electron.app.dock.setIcon).not.toHaveBeenCalled()
     expect(electron.Menu.setApplicationMenu).not.toHaveBeenCalled()
     expect(electron.browserWindows[0]?.removeMenu).not.toHaveBeenCalled()
@@ -2152,7 +2157,7 @@ describe('Electron desktop runtime', () => {
         profileName: 'desktop',
         productVersion: PRODUCT_VERSION,
         profileDir: expect.stringMatching(/profiles[\\/]+desktop$/u),
-        homeDir: expect.stringContaining('dsh-desktop-user-data'),
+        homeDir: expect.stringContaining('dsh-desktop-beta-user-data'),
         spawn: expect.any(Function),
         onLaunchError: expect.any(Function),
       }))
@@ -2184,7 +2189,7 @@ describe('Electron desktop runtime', () => {
 
     expect(diagnostics.export).toHaveBeenCalledOnce()
     expect(diagnostics.export).toHaveBeenCalledWith(
-      expect.stringContaining('dsh-desktop-user-data'),
+      expect.stringContaining('dsh-desktop-beta-user-data'),
       expect.objectContaining({
         appVersion: PRODUCT_VERSION,
         crashDumpsDir: expect.stringMatching(/[\\/]Crashpad$/u),
@@ -2576,7 +2581,7 @@ describe('Electron desktop runtime', () => {
       isPackaged: false,
       canDownload: false,
       currentVersion: PRODUCT_VERSION,
-      statePath: join('/tmp/dsh-desktop-user-data', 'updates', 'state.json'),
+      statePath: join('/tmp/dsh-desktop-beta-user-data', 'updates', 'state.json'),
     })
     electron.app.isPackaged = true
     expect(runtime.updates).toMatchObject({ isPackaged: true, canDownload: true })
@@ -2631,7 +2636,7 @@ describe('Electron desktop runtime', () => {
       signal: controller.signal,
     })
     expect(electron.shell.openPath).toHaveBeenCalledWith('/tmp/DSH-Desktop-2.1.0-mac.dmg')
-    expect(updater.record).toHaveBeenCalledWith('/tmp/dsh-desktop-user-data', {
+    expect(updater.record).toHaveBeenCalledWith('/tmp/dsh-desktop-beta-user-data', {
       platform: 'darwin',
       version: '2.1.0',
       path: '/tmp/DSH-Desktop-2.1.0-mac.dmg',
@@ -2692,7 +2697,7 @@ describe('Electron desktop runtime', () => {
     await pending
 
     expect(childProcess.child.unref).toHaveBeenCalledOnce()
-    expect(updater.record).toHaveBeenCalledWith('/tmp/dsh-desktop-user-data', {
+    expect(updater.record).toHaveBeenCalledWith('/tmp/dsh-desktop-beta-user-data', {
       platform: 'win32',
       version: '2.1.0',
       path: 'C:\\Updates\\DSH-Desktop-2.1.0-windows.exe',
@@ -2717,7 +2722,7 @@ describe('Electron desktop runtime', () => {
     childProcess.emit('error', new Error('blocked'))
 
     await expect(pending).rejects.toThrow('blocked')
-    expect(updater.record).toHaveBeenCalledWith('/tmp/dsh-desktop-user-data', {
+    expect(updater.record).toHaveBeenCalledWith('/tmp/dsh-desktop-beta-user-data', {
       platform: 'win32',
       version: '2.1.0',
       path: 'C:\\Updates\\DSH-Desktop-2.1.0-windows.exe',
@@ -2804,7 +2809,7 @@ describe('Electron desktop runtime', () => {
         buttons: ['Delete Installer', 'Keep Installer'],
       }),
     )
-    expect(updater.resolve).toHaveBeenCalledWith('/tmp/dsh-desktop-user-data', artifact, remove)
+    expect(updater.resolve).toHaveBeenCalledWith('/tmp/dsh-desktop-beta-user-data', artifact, remove)
   })
 
   it('rejects a macOS handoff when the operating system cannot open the DMG', async () => {

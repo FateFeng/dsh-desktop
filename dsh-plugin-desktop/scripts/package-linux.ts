@@ -30,6 +30,8 @@ export interface LinuxPackageOptions {
   readonly desktopRoot: string
   /** Absolute electron-builder CLI module. */
   readonly builderCli: string
+  /** Local argv-normalizing launcher for electron-builder. */
+  readonly builderRunner: string
   /** Prepare platform-specific native runtime dependencies before packaging. */
   readonly prepareRuntime: () => void
   /** Absolute packaged-artifact verification script. */
@@ -89,6 +91,7 @@ export function createLinuxPackageOptions(verifier = './verify-linux-artifacts.t
     workspaceRoot,
     desktopRoot,
     builderCli: require.resolve('electron-builder/cli.js'),
+    builderRunner: fileURLToPath(new URL('./electron-builder-cli.cjs', import.meta.url)),
     prepareRuntime: () => {
       prepareFsExtForElectron({ platform: 'linux', arch: 'x64', desktopRoot })
     },
@@ -139,6 +142,7 @@ export function packageLinuxArtifacts(
   options.run(
     options.nodeExecutable,
     [
+      options.builderRunner,
       options.builderCli,
       '--linux',
       'AppImage',

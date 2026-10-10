@@ -5,7 +5,7 @@
     "noEmit": true,
     "emitDeclarationOnly": false
   },
-  "include": ["scripts/**/*.ts", "src/*.ts", "tests/**/*.ts", "tests/**/*.tsx"],
+  "include": ["scripts/**/*.ts", "src/*.ts", "src/client/*.d.ts", "src/client/**/*.d.ts", "tests/**/*.ts", "tests/**/*.tsx"],
   "exclude": [
     "tests/client-boot-health.spec.ts",
     "tests/client-aa-settings.spec.ts",

@@ -62,6 +62,12 @@ Cordis row 会在 profile 激活期间登记原生窗口参数。Launcher 只在
 
 本次 alpha runtime 迁移不再携带 Desktop 自有的工作区文件夹拖放行为或聊天附件拖放隔离补丁。在按 alpha Client UI 重新评估这些交互前，请使用普通工作区选择流程。
 
+## 工作区目录
+
+工作区编辑对话框中的“工作区目录”区域可为当前工作区关联最多 32 个互不重叠的文件夹。第一行始终是主目录：它仍是工作区身份、默认目录和会话工作目录。附加目录彼此独立，不会合并成一棵文件树。文件浏览器刷新按钮旁的目录下拉框只切换该浏览器当前显示的主目录或附加目录。每个标签页会先关闭旧目录树再打开新根目录，并忽略旧加载产生的过期结果；会话 cwd 不变。解除关联只删除关联，不会删除真实文件夹。关联数据保存在 `$DSH_HOME/desktop-workspace-sources.json`。
+
+Desktop Client 通过受支持的工作区编辑与文件工具栏 slot 提供控件，位置与截图一致，不再使用侧边栏替代入口或 DOM 补丁。Linux 和 macOS 支持添加、浏览和解除关联。Windows 编辑对话框仍会列出已保存的文件夹，但添加/解除关联控件会禁用，工具栏目录选择器也不会显示：固定的 Windows ACL runner 只授权主工作区根目录。安全的 Windows 多目录访问需要上游提供 ACL 授权生命周期能力；confinement 失败时绝不会降级为不受限访问。
+
 在所有呈现模式下，Windows PowerShell 都会保留上游 `pwsh-sandbox` 行为与 Windows ACL confinement。Launcher generation 只会把该 Host provider 替换为同一 package 中的 `dsh-plugin-desktop-beta/windows-pwsh-sandbox` 子路径。对于与上游 ACL runner 完全匹配的 argv，adapter 会让打包后的 Electron executable 通过私有 trampoline 以 Node 模式启动。Trampoline 会先精确校验上游 runner，再在导入它之前移除 Node-mode 环境变量，并确保自身这个原本没有 console 的 Windows 进程拥有一个隐藏 console。受限 PowerShell 进程随后可以继承该 console，而不必在已经使用受限 token 时自行创建。Console 分配失败会通过现有带签名的 runner 失败路径退出；全部 ACL policy 与后续失败处理仍委托给上游 runner。Desktop deploy root 还会保留 Yarn patch，在两条原生受限进程路径上把 `STARTF_USESHOWWINDOW`、现有的 `STARTF_USESTDHANDLES` 与 `SW_HIDE` 组合起来。它不会使用与上游实现不兼容的 `CREATE_NO_WINDOW` 或 `CREATE_NEW_CONSOLE` flag。直接使用 `danger-full-access` 的 PowerShell、macOS 与 Linux 执行路径保持不变；Windows confinement 失败时不会自动回退到不受限执行。
 
 ## 扩展窗口模式
@@ -265,6 +271,7 @@ corepack.cmd yarn dist:win-portable
 - 添加或删除 profile bundle 后必须重启 DSH Desktop；Launcher 不监听 profile manifest。从托盘选择其他 profile 时会自动完成该重启。
 - 切换兼容模式、扩展窗口或增强模式，或修改材质，按设计都会重启应用；存活的 generation 不会热切换 Loader row、slot 所有权或原生材质。
 - Linux 不支持扩展窗口与增强模式。Linux 继续使用兼容呈现。
+- pinned Windows ACL runner 只支持一个工作区授权，无法安全授予附加目录。上游 provider 能够在子进程退出后管理每个附加授权前，Desktop 会禁用 Windows 上的目录添加与切换。
 - macOS 与 Windows 托盘终端会提供私有 `dsh`、`pnpm` 与 `node` shim。除此之外，Host runtime 会在当前 Electron 进程的 `PATH` 中公开内置 `pnpm` 命令作为 ambient compatibility，并提供受管 `desktopPnpm` service；这些命令都不会加入系统 `PATH`，Linux 目前也没有 desktop 终端命令。
 - 在 Windows 上，ambient `pnpm` 命令与 lifecycle Node helper 是 `.cmd` shim。`desktopPnpm.run()` 会启动准确的已打包 pnpm entry，从而避免 manager process 的 shell lookup；上游 `dsh plugin`、PowerShell 与命令提示符则可通过 command interpreter 解析 ambient shim。第三方插件直接调用 Node `spawn('pnpm', { shell: false })`，或 lifecycle script 直接以 `shell: false` 执行其 `.cmd` `npm_node_execpath`，仍属于不可移植行为，应改用该 service 或 shell-aware 启动路径。
 - `dshmarket@1.2.3` 仍是用户可选安装的第三方 package，而不是内置 marketplace。只有重新审计的版本同时消费可选 Desktop service、保留普通 DSH fallback，并包含再分发所需的完整 license notice 后，才会重新评估预装。
