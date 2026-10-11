@@ -58,13 +58,37 @@ The Cordis row registers native window values during profile activation. The lau
 
 On Windows, the launcher pins the browse directory-picker backend and keeps the full in-app directory panel. The desktop build patches that panel with a small system-folder icon whose same-origin route calls Electron's `dialog.showOpenDialog`; a selected path returns to the panel's existing workspace-adoption flow, while cancellation leaves the panel open. Ordinary browser and remote launches do not receive the desktop bridge. macOS and Linux retain the upstream adaptive chooser.
 
-This alpha runtime migration does not carry the Desktop-owned Workspace folder-drop behavior or the chat-attachment drag-isolation patch. Use the ordinary Workspace selection flow while those interactions are re-evaluated against the alpha Client UI.
+## Desktop-specific additions
 
-## Workspace source directories
+The following features are maintained by this repository as Desktop-owned additions to the pinned upstream UI. They are shared by Stable and Beta and are not upstream defaults.
+
+### Workspace source directories
 
 The **Workspace directories** section inside the Workspace edit dialog associates up to 32 non-overlapping folders with the active Workspace. The first row is always the primary folder: it remains the Workspace identity, default root, and Session working directory. Attached folders stay separate rather than merging into one tree. The folder dropdown beside the file browser's reload control switches only that browser between the primary and attached roots. Each tab closes its previous directory tree before opening the next root and ignores stale results from earlier loads; Session cwd is unchanged. Detaching removes the association but never deletes the folder. Associations persist in `$DSH_HOME/desktop-workspace-sources.json`.
 
-The Desktop Client uses the supported Workspace-edit and file-toolbar slots, placing the folder list and selector in the locations shown in the screenshots rather than in a sidebar substitute or DOM patch. Linux and macOS support attaching, browsing, and detaching folders. On Windows, the edit dialog still lists saved folders, but attach/detach controls are disabled and the toolbar selector is omitted: the pinned Windows ACL runner authorizes only the primary Workspace root. Safe Windows multi-root access requires an upstream ACL grant-lifecycle capability; confinement never falls back to unrestricted access.
+The Desktop Client uses the supported Workspace-edit and file-toolbar slots. Linux and macOS support attaching, browsing, and detaching folders. On Windows, the edit dialog still lists saved folders, but attach/detach controls are disabled and the toolbar selector is omitted: the pinned Windows ACL runner authorizes only the primary Workspace root. Safe Windows multi-root access requires an upstream ACL grant-lifecycle capability; confinement never falls back to unrestricted access.
+
+![Workspace with attached source directories](docs/screenshots/workspace.png)
+
+### Files tree actions and Agent references
+
+Right-click an entry in Files to reveal it in the operating-system file manager, open a file in VS Code, copy its absolute or Workspace-relative path, or insert a Workspace-relative `@` reference into the active Agent composer. Files and folders of any format can also be dragged from Files into Agent. Desktop inserts a structured Workspace reference instead of uploading file contents; the Host verifies the exact path and entry type against roots authorized for the active Workspace and rejects malformed, stale, or out-of-scope drops.
+
+![Files tree context-menu shortcuts](docs/screenshots/short.png)
+
+### Android Logcat
+
+The built-in Logcat drawer streams `adb` output from a selected Android device. Select processes and severity levels, then combine Tag, Process, and Message regular-expression filters, including excluded Tags. The drawer can pause or follow live output, remembers filters per device, supports line wrapping and separate UI/log font sizes, and can copy or export filtered logs. Device screenshots can be previewed and saved or copied as PNG.
+
+![Android Logcat integration](docs/screenshots/android_logcat.png)
+
+### GitHub Copilot provider
+
+Desktop Settings can start GitHub Copilot's device-code sign-in flow and display its authorization prompts. After sign-in, available Copilot models appear in the DSH model picker with category and cost markers.
+
+![GitHub Copilot sign-in and connected models](docs/screenshots/copilot.png)
+
+### Windows PowerShell sandbox
 
 Windows PowerShell keeps the upstream `pwsh-sandbox` behavior and Windows ACL confinement in every presentation mode. The launcher generation replaces only that Host provider with the `dsh-plugin-desktop/windows-pwsh-sandbox` subpath from this same package. For the exact upstream ACL-runner argv, the adapter launches the packaged Electron executable in Node mode through a private trampoline. After validating the exact upstream runner and before importing it, the trampoline removes the Node-mode variable and ensures that its otherwise consoleless Windows process owns a hidden console. The restricted PowerShell process can then inherit that console instead of creating one while already running under the restricted token. Console allocation failure exits through the existing signed runner-failure path, and all ACL policy and subsequent failure handling remain delegated to the upstream runner. The desktop deploy root also retains its Yarn patch that combines `STARTF_USESHOWWINDOW` with the existing `STARTF_USESTDHANDLES` and `SW_HIDE` on both native restricted-process paths. It does not use the upstream-incompatible `CREATE_NO_WINDOW` or `CREATE_NEW_CONSOLE` flags. Direct `danger-full-access` PowerShell, macOS, and Linux execution are unchanged; there is no automatic unrestricted fallback when Windows confinement fails.
 
