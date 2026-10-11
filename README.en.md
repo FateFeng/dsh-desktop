@@ -1,31 +1,37 @@
-# Additional Features on `fate-dev`
+<p align="center"><img src="assets/fate-dev-banner.svg" alt="DSH Desktop · fate-dev community extensions: Workspace, Files, Copilot, and Logcat" width="100%"></p>
 
-This README documents only the additions maintained on the `fate-dev` branch beyond upstream DSH Desktop; it omits the general upstream product overview. [中文](README.md)
+<h1 align="center">fate-dev · Extended for your workflow</h1>
 
-## Multi-directory workspaces
+<p align="center">This page covers additions maintained on fate-dev beyond upstream DSH Desktop. For the upstream product overview, visit the <a href="https://github.com/anywhere-labs/dsh-desktop">upstream project</a>.<br><a href="README.md">简体中文</a></p>
 
-Keep the primary directory as the workspace identity and session working directory while attaching additional source directories for browsing in Files. Switching the Files browser root does not change the session working directory. Windows currently supports only the primary directory.
-
-![Switching between the primary and attached directories in Files](dsh-plugin-desktop/docs/screenshots/workspace.png)
-
-## Files tree shortcuts
-
-File and directory context actions can reveal an item in the system file manager, open it in VS Code, copy its absolute or relative path, or insert a workspace reference into an Agent conversation. Dragging files or folders inserts structured workspace references without uploading file contents.
-
-![Files tree context menu](dsh-plugin-desktop/docs/screenshots/short.png)
-
-## GitHub Copilot sign-in and model integration
-
-Sign in to Copilot with GitHub device-code authorization and add the available Copilot models to the DSH Desktop model picker.
-
-![Connected GitHub Copilot account and available models](dsh-plugin-desktop/docs/screenshots/copilot.png)
-
-## Android Logcat integration
-
-Select an Android device through adb and inspect its live logs. Filter by process, Tag, excluded Tags, or message regex, and pause/resume display, copy or export visible logs, or capture a device screenshot.
-
-![Android Logcat panel](dsh-plugin-desktop/docs/screenshots/android_logcat.png)
+<p align="center"><strong>Multi-directory workspaces</strong>　·　<strong>Files shortcuts</strong>　·　<strong>GitHub Copilot</strong>　·　<strong>Android Logcat</strong></p>
 
 ---
 
-Screenshots referenced on this branch are stored in [`dsh-plugin-desktop/docs/screenshots/`](dsh-plugin-desktop/docs/screenshots/).
+## Multi-directory workspaces
+
+Keep multiple code directories within reach in one workspace. The primary directory remains the workspace identity and session working directory, while attached directories are available from the Files browser. Switching the browser root never silently changes the Agent's session context. Windows currently supports the primary directory only.
+
+<p align="center"><img src="assets/readme/workspace.png" alt="Switch between the primary and attached directories in Files" width="88%"></p>
+
+## Files tree shortcuts
+
+Go from the file tree straight to common actions: reveal an item in the system file manager, open it in VS Code, copy an absolute or relative path, or insert a workspace reference into an Agent conversation. Drag-and-drop inserts a structured reference; it does not upload file contents into the conversation.
+
+<p align="center"><img src="assets/readme/files-shortcuts.png" alt="Context actions for a file-tree item" width="32%"></p>
+
+## GitHub Copilot sign-in and model integration
+
+Authorize with a GitHub device code, then choose available Copilot models from the DSH Desktop model picker. Account connection status and the model list are presented together in model settings.
+
+<p align="center"><img src="assets/readme/copilot.png" alt="GitHub Copilot connection status and available models" width="66%"></p>
+
+## Android Logcat integration
+
+Select a device through adb and inspect its live Logcat stream on desktop. Narrow results by process, Tag, excluded Tags, or message regex; pause or resume display, copy or export visible logs, and capture a device screenshot.
+
+<p align="center"><img src="assets/readme/android-logcat.png" alt="Android Logcat device selection and log filters" width="100%"></p>
+
+---
+
+<p align="center"><sub>Original interface captures are in <a href="dsh-plugin-desktop/docs/screenshots/">dsh-plugin-desktop/docs/screenshots/</a>; README-ready crops and color treatments are in <a href="assets/readme/">assets/readme/</a>.</sub></p>
