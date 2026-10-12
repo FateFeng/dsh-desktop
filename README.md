@@ -32,6 +32,15 @@
 
 <p align="center"><img src="assets/readme/android-logcat.png" alt="Android Logcat 设备选择与日志过滤面板" width="100%"></p>
 
+## Ubuntu 安装包
+
+以下为 fate-dev 构建，前往 [GitHub Releases](https://github.com/FateFeng/dsh-desktop/releases/tag/v2.0.17-fate-dev) 下载 Ubuntu x64 安装包：
+
+| 版本 | AppImage | Debian / Ubuntu |
+| --- | --- | --- |
+| Stable 2.0.17 | [下载](https://github.com/FateFeng/dsh-desktop/releases/download/v2.0.17-fate-dev/DSH-Desktop-2.0.17-x86_64.AppImage) | [下载](https://github.com/FateFeng/dsh-desktop/releases/download/v2.0.17-fate-dev/DSH-Desktop-2.0.17-amd64.deb) |
+| Beta 2.0.17-beta.1 | [下载](https://github.com/FateFeng/dsh-desktop/releases/download/v2.0.17-fate-dev/DSH-Desktop-Beta-2.0.17-beta.1-x86_64.AppImage) | [下载](https://github.com/FateFeng/dsh-desktop/releases/download/v2.0.17-fate-dev/DSH-Desktop-Beta-2.0.17-beta.1-amd64.deb) |
+
 ---
 
 <p align="center"><sub>原始界面截图位于 <a href="dsh-plugin-desktop/docs/screenshots/">dsh-plugin-desktop/docs/screenshots/</a>；README 使用的裁切与配色版本位于 <a href="assets/readme/">assets/readme/</a>。</sub></p>

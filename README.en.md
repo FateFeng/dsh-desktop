@@ -32,6 +32,15 @@ Select a device through adb and inspect its live Logcat stream on desktop. Narro
 
 <p align="center"><img src="assets/readme/android-logcat.png" alt="Android Logcat device selection and log filters" width="100%"></p>
 
+## Ubuntu downloads
+
+These are fate-dev builds. Download the Ubuntu x64 packages from the [GitHub Release](https://github.com/FateFeng/dsh-desktop/releases/tag/v2.0.17-fate-dev):
+
+| Version | AppImage | Debian / Ubuntu |
+| --- | --- | --- |
+| Stable 2.0.17 | [Download](https://github.com/FateFeng/dsh-desktop/releases/download/v2.0.17-fate-dev/DSH-Desktop-2.0.17-x86_64.AppImage) | [Download](https://github.com/FateFeng/dsh-desktop/releases/download/v2.0.17-fate-dev/DSH-Desktop-2.0.17-amd64.deb) |
+| Beta 2.0.17-beta.1 | [Download](https://github.com/FateFeng/dsh-desktop/releases/download/v2.0.17-fate-dev/DSH-Desktop-Beta-2.0.17-beta.1-x86_64.AppImage) | [Download](https://github.com/FateFeng/dsh-desktop/releases/download/v2.0.17-fate-dev/DSH-Desktop-Beta-2.0.17-beta.1-amd64.deb) |
+
 ---
 
 <p align="center"><sub>Original interface captures are in <a href="dsh-plugin-desktop/docs/screenshots/">dsh-plugin-desktop/docs/screenshots/</a>; README-ready crops and color treatments are in <a href="assets/readme/">assets/readme/</a>.</sub></p>
