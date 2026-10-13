@@ -308,24 +308,42 @@ async function readDevices(
   return parseAndroidLogcatDevices(result.stdout)
 }
 
+async function waitForSseDrain(res: ServerResponse, signal: AbortSignal): Promise<void> {
+  await new Promise<void>(resolve => {
+    const done = (): void => {
+      res.off('drain', done)
+      res.off('close', done)
+      signal.removeEventListener('abort', done)
+      resolve()
+    }
+    res.once('drain', done)
+    res.once('close', done)
+    signal.addEventListener('abort', done, { once: true })
+    if (signal.aborted || res.destroyed || res.writableEnded) done()
+  })
+}
+
 async function writeSse(res: ServerResponse, event: string, payload: unknown, signal: AbortSignal): Promise<boolean> {
   if (signal.aborted || res.destroyed || res.writableEnded) return false
   const text = `event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`
-  if (!res.write(text)) {
-    await new Promise<void>(resolve => {
-      const done = (): void => {
-        res.off('drain', done)
-        res.off('close', done)
-        signal.removeEventListener('abort', done)
-        resolve()
-      }
-      res.once('drain', done)
-      res.once('close', done)
-      signal.addEventListener('abort', done, { once: true })
-      if (signal.aborted || res.destroyed || res.writableEnded) done()
-    })
-  }
+  if (!res.write(text)) await waitForSseDrain(res, signal)
   return !signal.aborted && !res.destroyed && !res.writableEnded
+}
+
+async function writeSseComment(res: ServerResponse, signal: AbortSignal): Promise<void> {
+  if (signal.aborted || res.destroyed || res.writableEnded) return
+  if (!res.write(': keep-alive\n\n')) await waitForSseDrain(res, signal)
+}
+
+function startSseHeartbeat(res: ServerResponse, signal: AbortSignal): () => void {
+  let writing = false
+  const timer = setInterval(() => {
+    if (writing || signal.aborted || res.destroyed || res.writableEnded) return
+    writing = true
+    void writeSseComment(res, signal).finally(() => { writing = false })
+  }, 15_000)
+  timer.unref?.()
+  return () => clearInterval(timer)
 }
 
 function startStream(
@@ -338,6 +356,7 @@ function startStream(
   const lifetime = requestLifetime(req, res, lifetimes)
   const { signal } = lifetime
   let handle: SubprocessHandle | undefined
+  let stopHeartbeat = (): void => {}
   let stderrTail = ''
 
   const work = async (): Promise<void> => {
@@ -372,6 +391,7 @@ function startStream(
         'x-content-type-options': 'nosniff',
       })
       res.flushHeaders()
+      stopHeartbeat = startSseHeartbeat(res, signal)
 
       stdout.setEncoding('utf8')
       let pending = ''
@@ -410,6 +430,7 @@ function startStream(
         await writeSse(res, 'error', { error: message }, signal)
       }
     } finally {
+      stopHeartbeat()
       lifetime.dispose()
       if (handle !== undefined) {
         handle.terminate()

@@ -409,12 +409,13 @@ describe('Desktop Copilot Host registration', () => {
         },
       },
       connection: { requestRejection },
+      reflect: { provide: () => () => {} },
       on: () => () => {},
       inject: () => {},
       // Only the first five effects register Copilot routes; stop this focused
       // fixture before unrelated native-shell initialization.
       effect: (register: () => void) => {
-        if (routes.size === 5) throw new Error('Copilot routes registered')
+        if (routes.has(DESKTOP_COPILOT_AUTHORIZATION_MODELS_PATH)) throw new Error('Copilot routes registered')
         register()
       },
     } as unknown as Context

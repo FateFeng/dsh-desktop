@@ -3,6 +3,7 @@ import { act, createElement, type ComponentProps } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
+import type { InputState } from '@deepseek-ai/dsh-client-ui-conversation/client'
 import { DesktopFileContextMenu } from '../src/client/desktop-file-context-menu.tsx'
 import type { SessionWorkspacePathApplication } from '@deepseek-ai/dsh-api-session-controller/types'
 
@@ -75,7 +76,10 @@ function openContextMenu(row: HTMLLIElement): MouseEvent {
   return event
 }
 
-async function mountMenu() {
+async function mountMenu(options: {
+  readonly draft?: string
+  readonly insertion?: typeof insertion
+} = {}) {
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true)
   vi.stubGlobal('requestAnimationFrame', () => 1)
   vi.stubGlobal('cancelAnimationFrame', () => {})
@@ -90,7 +94,9 @@ async function mountMenu() {
   session.append(host, tree)
   document.body.append(session)
   root = createRoot(host)
-  const captureInsertion = vi.fn(() => insertion)
+  const capturedInsertion = options.insertion ?? insertion
+  const draft = options.draft ?? 'task'
+  const captureInsertion = vi.fn(() => capturedInsertion)
   const insertText = vi.fn(() => true)
   const openWorkspacePath: ComponentProps<typeof DesktopFileContextMenu>['openWorkspacePath'] = vi.fn(async () => ({
     ok: true as const,
@@ -120,6 +126,14 @@ async function mountMenu() {
   })
   const props: ComponentProps<typeof DesktopFileContextMenu> = {
     sessionId,
+    useInput: <S,>(selector: (state: InputState) => S) => selector({
+      draft,
+      attachmentIds: [],
+      draftRev: capturedInsertion.draftRev,
+      phase: 'plain',
+      occurrences: [],
+      queue: [],
+    }),
     inputActions: {
       captureInsertion,
       insertText,
@@ -167,7 +181,7 @@ describe('Desktop file-tree context menu', () => {
     expect(document.body.querySelectorAll('[role="menuitem"]')).toHaveLength(5)
 
     await act(async () => { menuItem('Add to task').click() })
-    expect(actions.insertText).toHaveBeenCalledWith('@src/main.ts', insertion)
+    expect(actions.insertText).toHaveBeenCalledWith(' @src/main.ts ', insertion)
 
     await act(async () => { openContextMenu(actions.file) })
     await act(async () => { menuItem('Show in file manager').click(); await Promise.resolve() })
@@ -193,13 +207,29 @@ describe('Desktop file-tree context menu', () => {
     expect(actions.writeText).toHaveBeenCalledWith('src/main.ts')
   })
 
+  it('replaces the active @ query at the saved cursor without disturbing later text', async () => {
+    const draft = '帮我看一下 @souce       总结后 生成文档到 @define'
+    const caret = draft.indexOf('       总结后')
+    const actions = await mountMenu({
+      draft,
+      insertion: { start: caret, end: caret, draftRev: insertion.draftRev },
+    })
+    await act(async () => { openContextMenu(actions.file) })
+    await act(async () => { menuItem('Add to task').click() })
+    expect(actions.insertText).toHaveBeenCalledWith('@src/main.ts', {
+      start: caret - '@souce'.length,
+      end: caret,
+      draftRev: insertion.draftRev,
+    })
+  })
+
   it('inserts directory mentions and omits the file-only editor action', async () => {
     const actions = await mountMenu()
     await act(async () => { openContextMenu(actions.folder) })
     expect(document.body.querySelectorAll('[role="menuitem"]')).toHaveLength(4)
     expect(document.body.textContent).not.toContain('Open in VS Code')
     await act(async () => { menuItem('Add to task').click() })
-    expect(actions.insertText).toHaveBeenCalledWith('@src/', insertion)
+    expect(actions.insertText).toHaveBeenCalledWith(' @src/ ', insertion)
   })
 
   it('dismisses a portaled menu when its retained Session is hidden', async () => {

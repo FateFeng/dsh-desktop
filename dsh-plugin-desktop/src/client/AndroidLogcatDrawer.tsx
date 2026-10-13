@@ -13,7 +13,7 @@ import {
   filterAndroidLogcatEntries,
   readAndroidLogcatDevices,
   readAndroidLogcatProcesses,
-  streamAndroidLogcat,
+  streamAndroidLogcatWithReconnect,
   type AndroidLogcatDevice,
   type AndroidLogcatSeverity,
 } from './android-logcat-api.ts'
@@ -142,10 +142,10 @@ export function AndroidLogcatDrawer({ useStore, actions, t }: AndroidLogcatDrawe
       pending = []
       if (batch.length > 0 && selectedSerialRef.current === serial) actionsRef.current.appendLines(batch)
     }
-    void streamAndroidLogcat(serial, controller.signal, line => {
+    void streamAndroidLogcatWithReconnect(serial, controller.signal, line => {
       pending.push(line)
       if (frame === undefined) frame = requestAnimationFrame(flush)
-    }).then(() => {
+    }, () => actionsRef.current.setStreamConnected(), () => actionsRef.current.setStreamReconnecting()).then(() => {
       if (!controller.signal.aborted) actionsRef.current.stop()
     }).catch(error => {
       if (!controller.signal.aborted) actionsRef.current.setStreamError(androidLogcatErrorMessage(error) || t('streamStopped'))
@@ -344,7 +344,7 @@ export function AndroidLogcatDrawer({ useStore, actions, t }: AndroidLogcatDrawe
         <div className="dshAndroidLogcatHeading">
           <strong>{t('title')}</strong>
           {!state.collapsed && <span>{t('subtitle')}</span>}
-          {state.streamActive && <span className="dshAndroidLogcatStatus" data-state="running">{t('running')}</span>}
+          {state.streamActive && <span className="dshAndroidLogcatStatus" data-state={state.streamReconnecting ? 'reconnecting' : 'running'}>{state.streamReconnecting ? t('reconnecting') : t('running')}</span>}
           {state.paused && <span className="dshAndroidLogcatStatus" data-state="paused">{t('paused')}</span>}
         </div>
         <div className="dshAndroidLogcatHeaderActions">
@@ -365,6 +365,7 @@ export function AndroidLogcatDrawer({ useStore, actions, t }: AndroidLogcatDrawe
                 onChange={event => selectDevice(event.currentTarget.value)}
               >
                 <option value="">{t('chooseDevice')}</option>
+                {state.selectedSerial && selectedDevice === undefined && <option value={state.selectedSerial}>{state.selectedSerial} ({t('offline')})</option>}
                 {state.devices.map(device => <option key={device.serial} value={device.serial}>{deviceLabel(device, t)}</option>)}
               </select>
             </label>

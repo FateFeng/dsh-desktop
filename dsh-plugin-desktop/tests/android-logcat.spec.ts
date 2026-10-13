@@ -430,6 +430,42 @@ describe('Android Logcat Host plugin', () => {
     expect(logcat.waitForExit).toHaveBeenCalled()
   })
 
+  it('keeps an idle SSE connection alive with periodic comments', async () => {
+    vi.useFakeTimers()
+    try {
+      const stdout = new PassThrough()
+      const stderr = new PassThrough()
+      let finish: (outcome: Awaited<SubprocessHandle['done']>) => void = () => {}
+      const done = new Promise<Awaited<SubprocessHandle['done']>>(resolve => { finish = resolve })
+      const logcat = { ...child(''), stdout, stderr, done }
+      const h = await harness([child('List of devices attached\nemulator-5554 device\n'), logcat])
+      let announceStarted: () => void = () => {}
+      const started = new Promise<void>(resolve => { announceStarted = resolve })
+      const originalSpawn = h.spawn.getMockImplementation()
+      if (originalSpawn === undefined) throw new Error('missing subprocess fixture')
+      h.spawn.mockImplementation(spec => {
+        const handle = originalSpawn(spec)
+        if (spec.argv.includes('logcat')) announceStarted()
+        return handle
+      })
+      const res = response()
+      const streaming = h.routes.get(ANDROID_LOGCAT_STREAM_PATH)!.handler(
+        request(`${ANDROID_LOGCAT_STREAM_PATH}?serial=emulator-5554`), res,
+      )
+      await started
+      await vi.advanceTimersByTimeAsync(15_000)
+      expect(res.body).toContain(': keep-alive\n\n')
+
+      const teardown = h.teardown()
+      stdout.end()
+      stderr.end()
+      finish({ exitCode: 0, signal: null })
+      await Promise.all([streaming, teardown])
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('releases a blocked SSE write when plugin teardown aborts the stream', async () => {
     const stdout = new PassThrough()
     const stderr = new PassThrough()

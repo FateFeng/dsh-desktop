@@ -79,6 +79,7 @@ export const androidLogcatZh = {
   resize: '调整面板高度',
   paused: '已暂停显示',
   running: '正在接收日志',
+  reconnecting: '连接中断，正在重连…',
 } as const
 
 export const androidLogcatEn = {
@@ -158,6 +159,7 @@ export const androidLogcatEn = {
   resize: 'Resize drawer height',
   paused: 'Display paused',
   running: 'Receiving logs',
+  reconnecting: 'Connection lost; reconnecting…',
 } as const
 
 export type AndroidLogcatLocaleKey = keyof typeof androidLogcatEn

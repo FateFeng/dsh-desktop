@@ -264,7 +264,12 @@ function createHarness(
   const fiber = { id: DESKTOP_SETTINGS_ENTRY_ID }
   const ctx = {
     fiber,
+    reflect: { provide: vi.fn(() => () => {}) },
     desktopRuntime: runtime,
+    systemPrompt: {
+      section: vi.fn(() => () => {}),
+      getSectionOrder: vi.fn(() => 10),
+    },
     sandbox: {
       confine: vi.fn(async (argv: string[]) => ({
         argv,

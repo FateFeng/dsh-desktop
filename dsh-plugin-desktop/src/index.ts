@@ -33,6 +33,18 @@ import {
   handleDesktopWorkspaceSourcesRequest,
 } from './workspace-source-route.ts'
 import { WorkspaceSourceRoots } from './workspace-source-roots.ts'
+
+/** Live Desktop-only association surface; Git never reads the Files selection. */
+export interface DesktopGitSourceRoots {
+  attachedRoots(primaryWorkspace: string): readonly string[]
+}
+
+declare module '@deepseek-ai/cordis' {
+  interface Context {
+    desktopGitSourceRoots: DesktopGitSourceRoots
+  }
+}
+import { desktopFilePathPromptSection } from './desktop-file-path-guidance.ts'
 import { installWorkspaceSourcePolicy } from './workspace-source-policy.ts'
 import { installWorkspaceSourceFileReferences } from './workspace-source-file-references.ts'
 import {
@@ -227,6 +239,23 @@ export function apply(ctx: Context, config: DesktopShellConfig): void {
   const sourceRoots = new WorkspaceSourceRoots(join(resolveDshHome(), 'desktop-workspace-sources.json'))
   const disposeWorkspaceSourceRoots = ctx.reflect.provide('desktopWorkspaceSourceRoots', sourceRoots)
   ctx.effect(() => () => { void disposeWorkspaceSourceRoots() }, 'dsh-plugin-desktop: workspace source roots service')
+  // Keep the legacy read-only root list for the existing IDE Git plugin.
+  if (typeof ctx.provide === 'function') {
+    ctx.provide('desktopGitSourceRoots', {
+      attachedRoots: (primaryWorkspace: string) => runtime.platform === 'win32'
+        ? []
+        : sourceRoots.attachedRoots(primaryWorkspace),
+    })
+  }
+  ctx.inject(['systemPrompt'], scope => {
+    scope.effect(
+      () => scope.systemPrompt.section(desktopFilePathPromptSection(
+        scope.systemPrompt.getSectionOrder('HARNESS_SOURCE') + 1,
+        sourceRoots,
+      )),
+      'dsh-plugin-desktop: absolute file paths in user-facing output',
+    )
+  })
   ctx.effect(
     () => ctx.webServer.register({
       kind: 'exact',

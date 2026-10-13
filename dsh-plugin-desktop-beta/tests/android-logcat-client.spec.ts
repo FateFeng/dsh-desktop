@@ -17,6 +17,7 @@ import {
   readAndroidLogcatDevices,
   readAndroidLogcatProcesses,
   streamAndroidLogcat,
+  streamAndroidLogcatWithReconnect,
 } from '../src/client/android-logcat-api.ts'
 import { createAndroidLogcatStore } from '../src/client/android-logcat-store.ts'
 import { writeAndroidLogcatDisplayPreferences } from '../src/client/android-logcat-preferences.ts'
@@ -38,10 +39,10 @@ vi.mock('@deepseek-ai/dsh-client-store', () => ({
   }),
 }))
 
-afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks() })
+afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks() })
 
 describe('Android Logcat overlay styles', () => {
-  it('anchors to the shell overlay bottom and keeps panel surfaces opaque', () => {
+  it('anchors to the shell overlay bottom and uses theme-aware opaque surfaces and text', () => {
     const style = { id: '', dataset: {} as Record<string, string>, textContent: '', remove: vi.fn() }
     const appendChild = vi.fn()
     vi.stubGlobal('document', {
@@ -55,9 +56,15 @@ describe('Android Logcat overlay styles', () => {
       expect(style.dataset).toMatchObject({ plugin: 'dsh-plugin-desktop-beta', pluginCss: 'dsh-plugin-desktop-beta/android-logcat' })
       expect(style.textContent).toMatch(/\.dshAndroidLogcatDrawer \{[^}]*position: absolute;[^}]*right: 0;[^}]*bottom: 0;[^}]*left: 0;/)
       expect(style.textContent).toContain('max-height: calc(100% - 8px);')
-      expect(style.textContent).toContain('background: #11191d;')
-      expect(style.textContent).toContain('background: #1b292e;')
-      expect(style.textContent).toContain('background: #10181c;')
+      expect(style.textContent).toContain('background: var(--dsw-alias-bg-layer-1);')
+      expect(style.textContent).toContain('background: var(--dsw-alias-bg-layer-2);')
+      expect(style.textContent).toContain('color: var(--dsw-alias-label-primary);')
+      expect(style.textContent).toContain('color: var(--dsw-alias-label-secondary);')
+      expect(style.textContent).toContain('color: var(--dsw-alias-link);')
+      expect(style.textContent).toContain('color: var(--dsw-alias-label-tertiary);')
+      expect(style.textContent).toContain('color: var(--dsw-alias-state-warn-primary)')
+      expect(style.textContent).toContain('background: var(--dsw-alias-bg-mask-photo);')
+      expect(style.textContent).not.toMatch(/#[\da-f]{3,8}\b/iu)
       expect(style.textContent).toContain('align-self: flex-start;')
       expect(style.textContent).toContain('justify-content: flex-start;')
       expect(style.textContent).toContain('margin-inline-start: 0;')
@@ -158,6 +165,41 @@ describe('Android Logcat Client API', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(errorSource)))
     await expect(streamAndroidLogcat('emulator-5554', new AbortController().signal, () => {}))
       .rejects.toEqual(expect.objectContaining<Partial<AndroidLogcatApiError>>({ message: 'adb exited' }))
+  })
+
+  it('retries transient HTTP failures with backoff but stops on terminal requests', async () => {
+    vi.useFakeTimers()
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ error: 'temporarily unavailable' }), { status: 503 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ error: 'invalid device' }), { status: 400 }))
+    vi.stubGlobal('fetch', fetchMock)
+    const controller = new AbortController()
+    let announceReconnect: () => void = () => {}
+    const reconnecting = new Promise<void>(resolve => { announceReconnect = resolve })
+    const stream = streamAndroidLogcatWithReconnect('device-1', controller.signal, () => {}, undefined, announceReconnect)
+
+    await reconnecting
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    const rejected = expect(stream).rejects.toMatchObject({ status: 400, message: 'invalid device' })
+    await vi.advanceTimersByTimeAsync(500)
+    await rejected
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(String(fetchMock.mock.calls[0]?.[0])).toContain('serial=device-1')
+    expect(String(fetchMock.mock.calls[1]?.[0])).toContain('serial=device-1')
+  })
+
+  it('cancels the reconnect delay when the user stops streaming', async () => {
+    vi.useFakeTimers()
+    const fetchMock = vi.fn().mockResolvedValue(new Response('unavailable', { status: 502 }))
+    vi.stubGlobal('fetch', fetchMock)
+    const controller = new AbortController()
+    let announceReconnect: () => void = () => {}
+    const reconnecting = new Promise<void>(resolve => { announceReconnect = resolve })
+    const stream = streamAndroidLogcatWithReconnect('device-1', controller.signal, () => {}, undefined, announceReconnect)
+    await reconnecting
+    controller.abort()
+    await expect(stream).resolves.toBeUndefined()
+    expect(fetchMock).toHaveBeenCalledOnce()
   })
 
   it('parses threadtime columns and applies process, tag, level, and text filters', () => {
@@ -295,6 +337,22 @@ describe('Android Logcat slot store', () => {
     expect(store.getSnapshot()).toMatchObject({
       selectedSerial: '', entries: [], pausedEntries: null, paused: false,
     })
+  })
+
+  it('retains the selected serial and logs while the active stream reconnects after device loss', () => {
+    const store = createAndroidLogcatStore().create()
+    store.actions.setDevices(true, [{ serial: 'device-one', state: 'device' }])
+    store.actions.setSelectedSerial('device-one')
+    store.actions.start()
+    store.actions.appendLines(['before disconnect'])
+    store.actions.setStreamReconnecting()
+    store.actions.setDevices(true, [])
+    expect(store.getSnapshot()).toMatchObject({
+      selectedSerial: 'device-one', streamActive: true, streamReconnecting: true,
+      entries: [expect.objectContaining({ raw: 'before disconnect' })],
+    })
+    store.actions.setStreamConnected()
+    expect(store.getSnapshot().streamReconnecting).toBe(false)
   })
 
   it('stores multi-process, tag, level, and regex filter selections', () => {
