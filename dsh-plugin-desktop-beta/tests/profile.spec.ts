@@ -413,6 +413,9 @@ virtualStoreDirMaxLength: 60
     expect(rows.find(row => row.id === 'desktop-android-logcat')).toEqual(expect.objectContaining({
       name: 'dsh-plugin-desktop-beta/android-logcat',
     }))
+    expect(rows.find(row => row.id === 'desktop-git-review')).toEqual(expect.objectContaining({
+      name: 'dsh-plugin-desktop-beta/git-review',
+    }))
     expect(rows.find(row => row.id === 'desktop-notifications')).toEqual(expect.objectContaining({
       name: 'dsh-plugin-desktop-beta/notifications',
     }))

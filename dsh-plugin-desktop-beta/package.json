@@ -76,6 +76,10 @@
       "types": "./lib/types/android-logcat.d.ts",
       "default": "./lib/android-logcat.js"
     },
+    "./git-review": {
+      "types": "./lib/types/git-review.d.ts",
+      "default": "./lib/git-review.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -114,8 +118,12 @@
         "@deepseek-ai/dsh-client-ui-renderer",
         "@deepseek-ai/dsh-client-ui-settings",
         "@deepseek-ai/dsh-client-ui-theme",
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-sidebar",
+        "@deepseek-ai/dsh-client-ui-sidebar-right",
         "@deepseek-ai/dsh-client-ui-sidebar-files",
-        "@deepseek-ai/dsh-client-ui-workspace"
+        "@deepseek-ai/dsh-client-ui-workspace",
+        "@deepseek-ai/dsh-util-workspace-path"
       ],
       "platform": "web"
     },

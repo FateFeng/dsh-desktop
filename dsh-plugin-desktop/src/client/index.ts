@@ -1,4 +1,6 @@
 import type { Context as ClientContext } from '@deepseek-ai/cordis'
+import type { SessionId } from '@deepseek-ai/dsh-session/types'
+import { fileAddressFor } from '@deepseek-ai/dsh-util-workspace-path'
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type {} from '@deepseek-ai/dsh-client-ui-session/client'
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
@@ -31,6 +33,11 @@ import {
 } from './android-logcat-locales.ts'
 import { createAndroidLogcatStore } from './android-logcat-store.ts'
 import { installAndroidLogcatStyles } from './android-logcat-styles.ts'
+import { createGitReviewClient } from './git-review-api.ts'
+import { GitReviewPanel, GIT_REVIEW_TAB_ID } from './GitReviewPanel.tsx'
+import { GIT_REVIEW_LOCALE_NAMESPACE, gitReviewEn, gitReviewZh } from './git-review-locales.ts'
+import { createGitReviewTabDefinition } from './git-review-tab.ts'
+import { installGitReviewStyles } from './git-review-styles.ts'
 import { installDesktopDirectoryPickerBridge } from './directory-picker.ts'
 import { parseDesktopClientEnvironment } from './environment.ts'
 import { applyExtendedShell } from './extended-shell.ts'
@@ -195,6 +202,64 @@ export function apply(ctx: ClientContext): void {
   }
   if (environment.mode === 'advanced') applyAdvancedShell(ctx, environment)
   if (environment.mode === 'extended') applyExtendedShell(ctx, environment, desktopSettings)
+  ctx.effect(() => ctx.locale.register(GIT_REVIEW_LOCALE_NAMESPACE, { zh: gitReviewZh, en: gitReviewEn }),
+    'dsh-plugin-desktop: Git Review dictionaries')
+  ctx.effect(() => installGitReviewStyles('dsh-plugin-desktop'), 'dsh-plugin-desktop: Git Review styles')
+  // A Guide page is Session-scoped, so Git Review can never switch to another Workspace.
+  ctx.inject(['uiWorkspace', 'sidebarRight', 'sidebarRightTabs'], (scope: ClientContext) => {
+    const client = createGitReviewClient()
+    scope.effect(() => {
+      const pending = new Set<() => void>()
+      const openFile = (sessionId: SessionId, cwd: string, path: string): void => {
+        const address = fileAddressFor(sessionId, cwd, path)
+        const mounted = scope.sidebarRight.mounted
+        if (mounted.getSnapshot() === sessionId) {
+          scope.sidebarRight.openResource(address)
+          return
+        }
+        let finished = false
+        let unsubscribe = (): void => {}
+        let timeout: ReturnType<typeof setTimeout> | undefined
+        const finish = (): void => {
+          if (finished) return
+          finished = true
+          unsubscribe()
+          if (timeout !== undefined) clearTimeout(timeout)
+          pending.delete(finish)
+        }
+        const reveal = (): void => {
+          if (mounted.getSnapshot() !== sessionId) return
+          finish()
+          try { scope.sidebarRight.openResource(address) }
+          catch (cause) { console.error('dsh-plugin-desktop: could not open review file', cause) }
+        }
+        timeout = setTimeout(() => {
+          finish()
+          console.warn(`dsh-plugin-desktop: timed out waiting for Session ${sessionId} before opening a review file`)
+        }, 10_000)
+        unsubscribe = mounted.subscribe(reveal)
+        pending.add(finish)
+        try {
+          scope.uiWorkspace.openSession(sessionId)
+          reveal()
+        } catch (cause) {
+          finish()
+          console.error('dsh-plugin-desktop: could not select review Session', cause)
+        }
+      }
+      const t = scope.locale.bind(GIT_REVIEW_LOCALE_NAMESPACE)
+      const removeType = scope.sidebarRightTabs.register(createGitReviewTabDefinition(t))
+      const removePage = scope.slots.inject('sidebar.right.pane.tab', () => scope.slots.register({
+        name: 'sidebar.right.pane.tab', key: GIT_REVIEW_TAB_ID, locale: GIT_REVIEW_LOCALE_NAMESPACE,
+        inject: () => ({ client, openFile, platform: environment.platform }),
+      }, GitReviewPanel))
+      return () => {
+        removeType()
+        removePage()
+        for (const dispose of [...pending]) dispose()
+      }
+    }, 'dsh-plugin-desktop: Git Review guide page')
+  })
   // Scoped rather than module-level on purpose: the shells above provide
   // `layout`, and upstream's `uiWorkspace` injects it. Naming `uiWorkspace` in
   // the module-level inject list would deadlock the two against each other.

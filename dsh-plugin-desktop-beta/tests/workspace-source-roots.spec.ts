@@ -33,6 +33,9 @@ describe('WorkspaceSourceRoots', () => {
     expect(store.selectedRoot(primary)).toBe(source)
     expect(new WorkspaceSourceRoots(filename).list(primary)).toEqual([source])
     expect(new WorkspaceSourceRoots(filename).attachedRoots(primary)).toEqual([source])
+    expect(store.resolveAuthorizedRoot(primary, primary)).toBe(primary)
+    expect(store.resolveAuthorizedRoot(primary, source)).toBe(source)
+    expect(() => store.resolveAuthorizedRoot(primary, directory('dsh-source-unattached-'))).toThrow('selected source folder is not attached')
     expect(JSON.parse(readFileSync(filename, 'utf8'))).toEqual({
       version: 1,
       workspaces: { [primary]: [source] },

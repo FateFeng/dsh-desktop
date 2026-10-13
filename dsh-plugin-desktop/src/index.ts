@@ -225,6 +225,8 @@ export function apply(ctx: Context, config: DesktopShellConfig): void {
   let setupSaved = false
   const rendererOrigin = `http://127.0.0.1:${String(ctx.webServer.port)}`
   const sourceRoots = new WorkspaceSourceRoots(join(resolveDshHome(), 'desktop-workspace-sources.json'))
+  const disposeWorkspaceSourceRoots = ctx.reflect.provide('desktopWorkspaceSourceRoots', sourceRoots)
+  ctx.effect(() => () => { void disposeWorkspaceSourceRoots() }, 'dsh-plugin-desktop: workspace source roots service')
   ctx.effect(
     () => ctx.webServer.register({
       kind: 'exact',

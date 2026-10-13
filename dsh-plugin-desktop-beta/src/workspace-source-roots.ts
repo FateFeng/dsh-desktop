@@ -135,9 +135,20 @@ export class WorkspaceSourceRoots {
     }
   }
 
+  /** Resolve a Renderer-selected root only when it is the primary Workspace or a currently authorized attachment. */
+  resolveAuthorizedRoot(workspacePath: string, sourcePath: string): string {
+    const primary = canonicalDirectory(workspacePath, 'Workspace path')
+    const source = canonicalDirectory(sourcePath, 'selected source folder')
+    if (pathKey(source) === pathKey(primary)) return primary
+    if (!this.attachedRoots(primary).some(path => pathKey(path) === pathKey(source))) {
+      fail('selected source folder is not attached to this Workspace')
+    }
+    return source
+  }
+
   /** Select the file-browser root without changing Session cwd or Workspace identity. */
   select(workspacePath: string, sourcePath: string): string {
-    const primary = canonicalDirectory(workspacePath, 'Workspace path')
+     const primary = canonicalDirectory(workspacePath, 'Workspace path')
     const source = canonicalDirectory(sourcePath, 'selected source folder')
     if (pathKey(source) !== pathKey(primary)
       && !this.attachedRoots(primary).some(path => pathKey(path) === pathKey(source))) {
@@ -208,5 +219,11 @@ export class WorkspaceSourceRoots {
       rmSync(temporary, { force: true })
       throw new Error(`dsh-plugin-desktop: could not persist workspace source associations to ${this.filename}`, { cause })
     }
+  }
+}
+
+declare module '@deepseek-ai/cordis' {
+  interface Context {
+    desktopWorkspaceSourceRoots: WorkspaceSourceRoots
   }
 }
