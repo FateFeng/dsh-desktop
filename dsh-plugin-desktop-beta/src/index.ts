@@ -33,6 +33,7 @@ import {
   handleDesktopWorkspaceSourcesRequest,
 } from './workspace-source-route.ts'
 import { WorkspaceSourceRoots } from './workspace-source-roots.ts'
+import { desktopFilePathPromptSection } from './desktop-file-path-guidance.ts'
 import { installWorkspaceSourcePolicy } from './workspace-source-policy.ts'
 import { installWorkspaceSourceFileReferences } from './workspace-source-file-references.ts'
 import {
@@ -225,6 +226,15 @@ export function apply(ctx: Context, config: DesktopShellConfig): void {
   let setupSaved = false
   const rendererOrigin = `http://127.0.0.1:${String(ctx.webServer.port)}`
   const sourceRoots = new WorkspaceSourceRoots(join(resolveDshHome(), 'desktop-workspace-sources.json'))
+  ctx.inject(['systemPrompt'], scope => {
+    scope.effect(
+      () => scope.systemPrompt.section(desktopFilePathPromptSection(
+        scope.systemPrompt.getSectionOrder('HARNESS_SOURCE') + 1,
+        sourceRoots,
+      )),
+      'dsh-plugin-desktop: absolute file paths in user-facing output',
+    )
+  })
   ctx.effect(
     () => ctx.webServer.register({
       kind: 'exact',
