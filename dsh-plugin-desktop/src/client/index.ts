@@ -40,6 +40,11 @@ import { DESKTOP_SETTINGS_FORMS_SERVICE } from './settings-bridge.ts'
 import { installSidebarFooterStyles } from './sidebar-footer-styles.ts'
 import { applyDesktopWorkspaceSources } from './WorkspaceSources.tsx'
 import { desktopWindowService, provideDesktopWindow } from './window-service.ts'
+import { createGitReviewClient } from './git-review-api.ts'
+import { GitReviewPanel, GitReviewPanelIcon } from './GitReviewPanel.tsx'
+import { GIT_REVIEW_LOCALE_NAMESPACE, gitReviewEn, gitReviewZh } from './git-review-locales.ts'
+import { fileAddressFor } from '@deepseek-ai/dsh-util-workspace-path'
+import type { SessionId } from '@deepseek-ai/dsh-session/types'
 
 export { applyAdvancedShell } from './advanced-shell.ts'
 export { applyDesktopSettings } from './desktop-settings.ts'
@@ -209,5 +214,63 @@ export function apply(ctx: ClientContext): void {
       }),
       'dsh-plugin-desktop: launch workspace bridge',
     )
+  })
+  ctx.inject(['uiWorkspace', 'sidebarRight'], (scope: ClientContext) => {
+    const client = createGitReviewClient()
+    scope.effect(() => scope.locale.register(GIT_REVIEW_LOCALE_NAMESPACE, { zh: gitReviewZh, en: gitReviewEn }),
+      'dsh-plugin-desktop: Git review dictionaries')
+    scope.effect(() => {
+      const pending = new Set<() => void>()
+      const openFile = (sessionId: SessionId, cwd: string, path: string): void => {
+        const address = fileAddressFor(sessionId, cwd, path)
+        const mounted = scope.sidebarRight.mounted
+        if (mounted.getSnapshot() === sessionId) {
+          scope.sidebarRight.openResource(address)
+          return
+        }
+        let finished = false
+        let unsubscribe = (): void => {}
+        let timeout: ReturnType<typeof setTimeout> | undefined
+        const finish = (): void => {
+          if (finished) return
+          finished = true
+          unsubscribe()
+          if (timeout !== undefined) clearTimeout(timeout)
+          pending.delete(finish)
+        }
+        const reveal = (): void => {
+          if (mounted.getSnapshot() !== sessionId) return
+          finish()
+          try { scope.sidebarRight.openResource(address) }
+          catch (cause) { console.error('dsh-plugin-desktop: could not open review file', cause) }
+        }
+        timeout = setTimeout(() => {
+          finish()
+          console.warn(`dsh-plugin-desktop: timed out waiting for Session ${sessionId} before opening a review file`)
+        }, 10_000)
+        unsubscribe = mounted.subscribe(reveal)
+        pending.add(finish)
+        try {
+          scope.uiWorkspace.openSession(sessionId)
+          reveal()
+        } catch (cause) {
+          finish()
+          console.error('dsh-plugin-desktop: could not select review Session', cause)
+        }
+      }
+      const removeMain = scope.slots.inject('main', () => scope.slots.register({
+        name: 'main', key: 'desktop-git-review', locale: GIT_REVIEW_LOCALE_NAMESPACE,
+        inject: (): { client: ReturnType<typeof createGitReviewClient>; openFile: typeof openFile } => ({ client, openFile }),
+      }, GitReviewPanel))
+      const removePanel = scope.slots.inject('sidebar.panellist', () => scope.slots.register({
+        name: 'sidebar.panellist', id: 'desktop-git-review', order: 25,
+        locale: GIT_REVIEW_LOCALE_NAMESPACE, label: () => scope.locale.bind(GIT_REVIEW_LOCALE_NAMESPACE)('panel'),
+      }, GitReviewPanelIcon))
+      return () => {
+        removeMain()
+        removePanel()
+        for (const dispose of [...pending]) dispose()
+      }
+    }, 'dsh-plugin-desktop: Git review panel')
   })
 }

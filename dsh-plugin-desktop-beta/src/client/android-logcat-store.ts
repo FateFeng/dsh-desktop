@@ -36,6 +36,7 @@ export interface AndroidLogcatState {
   pausedEntries: AndroidLogcatEntry[] | null
   nextEntryId: number
   streamActive: boolean
+  streamReconnecting: boolean
   streamError: string
   paused: boolean
   autoFollow: boolean
@@ -66,6 +67,8 @@ type AndroidLogcatActions = {
   start: (draft: AndroidLogcatState) => void
   stop: (draft: AndroidLogcatState) => void
   setStreamError: (draft: AndroidLogcatState, error: string) => void
+  setStreamConnected: (draft: AndroidLogcatState) => void
+  setStreamReconnecting: (draft: AndroidLogcatState) => void
   appendLines: (draft: AndroidLogcatState, lines: readonly string[]) => void
   clear: (draft: AndroidLogcatState) => void
   pause: (draft: AndroidLogcatState) => void
@@ -102,6 +105,7 @@ export function createAndroidLogcatStore(): EngineStoreHandle<AndroidLogcatState
         pausedEntries: null,
         nextEntryId: 1,
         streamActive: false,
+        streamReconnecting: false,
         streamError: '',
         paused: false,
         autoFollow: true,
@@ -114,6 +118,7 @@ export function createAndroidLogcatStore(): EngineStoreHandle<AndroidLogcatState
         draft.focusReturnRequested = draft.open
         draft.open = false
         draft.streamActive = false
+        draft.streamReconnecting = false
       },
       consumeFocusReturn: draft => { draft.focusReturnRequested = false },
       toggleCollapsed: draft => { draft.collapsed = !draft.collapsed },
@@ -126,7 +131,7 @@ export function createAndroidLogcatStore(): EngineStoreHandle<AndroidLogcatState
         draft.devicesError = ''
         const selected = devices.find(device => device.serial === draft.selectedSerial)
         if (selected === undefined) {
-          if (draft.selectedSerial !== '') {
+          if (draft.selectedSerial !== '' && !draft.streamActive) {
             draft.selectedSerial = ''
             draft.processes = []
             draft.selectedPids = []
@@ -139,8 +144,7 @@ export function createAndroidLogcatStore(): EngineStoreHandle<AndroidLogcatState
             draft.pausedEntries = null
             draft.paused = false
           }
-          draft.streamActive = false
-        } else if (!available || selected.state !== 'device') {
+        } else if ((!available || selected.state !== 'device') && !draft.streamActive) {
           draft.streamActive = false
         }
       },
@@ -157,6 +161,7 @@ export function createAndroidLogcatStore(): EngineStoreHandle<AndroidLogcatState
         draft.messagePattern = DEFAULT_ANDROID_LOGCAT_FILTER_PREFERENCES.message
         draft.processesError = ''
         draft.streamError = ''
+        draft.streamReconnecting = false
         draft.entries = []
         draft.pausedEntries = null
         draft.paused = false
@@ -177,9 +182,11 @@ export function createAndroidLogcatStore(): EngineStoreHandle<AndroidLogcatState
       setUiFontSize: (draft, size: number) => { draft.uiFontSize = size },
       setLogFontSize: (draft, size: number) => { draft.logFontSize = size },
       setShowOperationTips: (draft, show: boolean) => { draft.showOperationTips = show },
-      start: draft => { draft.streamActive = true; draft.streamError = '' },
-      stop: draft => { draft.streamActive = false },
-      setStreamError: (draft, error: string) => { draft.streamError = error; draft.streamActive = false },
+      start: draft => { draft.streamActive = true; draft.streamReconnecting = false; draft.streamError = '' },
+      stop: draft => { draft.streamActive = false; draft.streamReconnecting = false },
+      setStreamError: (draft, error: string) => { draft.streamError = error; draft.streamActive = false; draft.streamReconnecting = false },
+      setStreamConnected: draft => { if (draft.streamActive) draft.streamReconnecting = false },
+      setStreamReconnecting: draft => { if (draft.streamActive) draft.streamReconnecting = true },
       appendLines: (draft, lines: readonly string[]) => {
         for (const line of lines) {
           draft.entries.push(makeAndroidLogcatEntry(line, draft.nextEntryId++))

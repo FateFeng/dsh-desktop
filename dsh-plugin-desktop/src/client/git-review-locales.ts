@@ -1,0 +1,81 @@
+export const GIT_REVIEW_LOCALE_NAMESPACE = 'desktop.git-review'
+
+export const gitReviewZh = {
+  panel: '审阅',
+  title: '代码审阅',
+  workspace: '项目目录',
+  chooseWorkspace: '选择工作区',
+  lastTurn: '最后一轮',
+  unstaged: '未暂存',
+  untracked: '未跟踪',
+  staged: '已暂存',
+  committed: '已提交',
+  branches: '分支',
+  noWorkspaces: '没有可审阅的工作区。',
+  noRepository: '此目录不属于 Git 仓库。',
+  turnFilesOmitted: '仅显示 {shown}/{total} 个文件，另有 {omitted} 个文件未列出。',
+  loading: '正在读取 Git 状态…',
+  error: '无法加载 Git 审阅数据。',
+  noChanges: '此类别没有变更。',
+  noLastTurn: '当前没有可用的最后一轮记录。轮次记录仅在对应会话仍处于活动状态时可查看。',
+  selectFile: '选择文件查看差异',
+  selectCommit: '选择提交查看差异',
+  additions: '新增',
+  deletions: '删除',
+  branch: '当前分支',
+  ahead: '领先',
+  behind: '落后',
+  openFile: '跳转到文件',
+  sessionUnavailable: '没有此目录对应的会话，暂时无法跳转到文件。',
+  binary: '二进制文件不显示文本差异。',
+  oversized: '文件过大，无法显示差异。',
+  diffUnavailable: '差异暂不可用。',
+  refresh: '刷新',
+  author: '作者',
+  commit: '提交',
+  remote: '远程',
+} as const
+
+export const gitReviewEn = {
+  panel: 'Review',
+  title: 'Code review',
+  workspace: 'Workspace',
+  chooseWorkspace: 'Choose a workspace',
+  lastTurn: 'Last turn',
+  unstaged: 'Unstaged',
+  untracked: 'Untracked',
+  staged: 'Staged',
+  committed: 'Committed',
+  branches: 'Branches',
+  noWorkspaces: 'There are no workspaces to review.',
+  noRepository: 'This directory is not inside a Git repository.',
+  turnFilesOmitted: 'Showing {shown} of {total} files; {omitted} are not listed.',
+  loading: 'Loading Git status…',
+  error: 'Could not load Git review data.',
+  noChanges: 'No changes in this category.',
+  noLastTurn: 'No live last-turn record is available. Turn records are available only while the corresponding Session remains active.',
+  selectFile: 'Select a file to view its diff',
+  selectCommit: 'Select a commit to view its diff',
+  additions: 'Added',
+  deletions: 'Deleted',
+  branch: 'Current branch',
+  ahead: 'Ahead',
+  behind: 'Behind',
+  openFile: 'Jump to file',
+  sessionUnavailable: 'No Session is attached to this directory; file navigation is unavailable.',
+  binary: 'Binary files do not have a text diff.',
+  oversized: 'This file is too large to display a diff.',
+  diffUnavailable: 'The diff is temporarily unavailable.',
+  refresh: 'Refresh',
+  author: 'Author',
+  commit: 'Commit',
+  remote: 'Remote',
+} as const
+
+export type GitReviewLocaleKey = keyof typeof gitReviewEn
+
+declare module '@deepseek-ai/dsh-client-ui-slots' {
+  interface LocaleNamespaceMap {
+    'desktop.git-review': GitReviewLocaleKey
+  }
+}

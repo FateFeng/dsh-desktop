@@ -193,6 +193,10 @@ describe('published package surface', () => {
       types: './lib/types/android-logcat.d.ts',
       default: './lib/android-logcat.js',
     })
+    expect(manifest.exports).toHaveProperty('./git-review', {
+      types: './lib/types/git-review.d.ts',
+      default: './lib/git-review.js',
+    })
     expect(manifest.exports).toHaveProperty('./notifications', {
       types: './lib/types/notifications.d.ts',
       default: './lib/notifications.js',
@@ -217,6 +221,7 @@ describe('published package surface', () => {
         '@deepseek-ai/dsh-client-ui-renderer',
         '@deepseek-ai/dsh-client-ui-settings',
         '@deepseek-ai/dsh-client-ui-theme',
+        '@deepseek-ai/dsh-client-ui-sidebar',
         '@deepseek-ai/dsh-client-ui-sidebar-files',
         '@deepseek-ai/dsh-client-ui-workspace',
       ],
@@ -494,6 +499,7 @@ describe('published package surface', () => {
     expect(config).toContain("'update-download': 'src/update-download.ts'")
     expect(config).toContain("updates: 'src/updates.ts'")
     expect(config).toContain("'android-logcat': 'src/android-logcat.ts'")
+    expect(config).toContain("'git-review': 'src/git-review.ts'")
   })
 
   it('bundles the pure file-reference grammar into the browser client without Node process globals', () => {

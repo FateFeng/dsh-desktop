@@ -4,8 +4,8 @@ import tailwindcss from '@tailwindcss/vite'
 import { defineConfig, type Plugin } from 'vite'
 
 const { name } = JSON.parse(readFileSync('package.json', 'utf8'))
-// This pure grammar has no shared runtime identity; bundle it into this client rather than leaving an unseeded module-table require.
-const inlinedClientModules = new Set(['@deepseek-ai/dsh-file-reference/grammar'])
+// These pure, stateless helpers have no shared runtime identity; bundle them into this client rather than leaving an unseeded module-table require.
+const inlinedClientModules = new Set(['@deepseek-ai/dsh-file-reference/grammar', '@deepseek-ai/dsh-util-workspace-path'])
 
 // The official Loader owns styles created inside a client factory. Keep the
 // existing native components' CSS active only while their onboarding is shown.

@@ -33,6 +33,17 @@ import {
   handleDesktopWorkspaceSourcesRequest,
 } from './workspace-source-route.ts'
 import { WorkspaceSourceRoots } from './workspace-source-roots.ts'
+
+/** Live Desktop-only association surface; Git never reads the Files selection. */
+export interface DesktopGitSourceRoots {
+  attachedRoots(primaryWorkspace: string): readonly string[]
+}
+
+declare module '@deepseek-ai/cordis' {
+  interface Context {
+    desktopGitSourceRoots: DesktopGitSourceRoots
+  }
+}
 import { desktopFilePathPromptSection } from './desktop-file-path-guidance.ts'
 import { installWorkspaceSourcePolicy } from './workspace-source-policy.ts'
 import { installWorkspaceSourceFileReferences } from './workspace-source-file-references.ts'
@@ -226,6 +237,15 @@ export function apply(ctx: Context, config: DesktopShellConfig): void {
   let setupSaved = false
   const rendererOrigin = `http://127.0.0.1:${String(ctx.webServer.port)}`
   const sourceRoots = new WorkspaceSourceRoots(join(resolveDshHome(), 'desktop-workspace-sources.json'))
+  // Resolve on every Git request: detaching a source (or replacing its path)
+  // immediately revokes the grant without changing Files or Session cwd.
+  if (typeof ctx.provide === 'function') {
+    ctx.provide('desktopGitSourceRoots', {
+      attachedRoots: (primaryWorkspace: string) => runtime.platform === 'win32'
+        ? []
+        : sourceRoots.attachedRoots(primaryWorkspace),
+    })
+  }
   ctx.inject(['systemPrompt'], scope => {
     scope.effect(
       () => scope.systemPrompt.section(desktopFilePathPromptSection(

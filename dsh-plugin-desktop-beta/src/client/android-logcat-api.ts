@@ -113,6 +113,7 @@ export async function streamAndroidLogcat(
   serial: string,
   signal: AbortSignal,
   onLine: (line: string) => void,
+  onConnected?: () => void,
 ): Promise<void> {
   const query = new URLSearchParams({ serial })
   const response = await fetch(`${ANDROID_LOGCAT_STREAM_PATH}?${query}`, {
@@ -131,6 +132,7 @@ export async function streamAndroidLogcat(
     throw new AndroidLogcatApiError(message, response.status)
   }
   if (response.body === null) throw new AndroidLogcatApiError('The Logcat stream has no response body')
+  onConnected?.()
 
   const reader = response.body.getReader()
   const decoder = new TextDecoder()
@@ -168,6 +170,53 @@ export function androidLogcatErrorMessage(error: unknown): string {
   if (error instanceof Error && error.name === 'AbortError') return ''
   if (error instanceof Error && error.message) return error.message
   return 'Unknown Logcat error'
+}
+
+const TERMINAL_LOGCAT_HTTP_STATUSES = new Set([400, 401, 403, 404, 405])
+const MAX_RECONNECT_DELAY_MS = 10_000
+
+function waitForReconnect(signal: AbortSignal, delayMs: number): Promise<void> {
+  return new Promise(resolve => {
+    let timer: ReturnType<typeof setTimeout>
+    const finish = (): void => {
+      clearTimeout(timer)
+      signal.removeEventListener('abort', finish)
+      resolve()
+    }
+    timer = setTimeout(finish, delayMs)
+    signal.addEventListener('abort', finish, { once: true })
+    if (signal.aborted) finish()
+  })
+}
+
+/** Keep the selected device stream alive across EOF, adb exits, and transient HTTP/device failures. */
+export async function streamAndroidLogcatWithReconnect(
+  serial: string,
+  signal: AbortSignal,
+  onLine: (line: string) => void,
+  onConnected?: () => void,
+  onReconnecting?: () => void,
+): Promise<void> {
+  let retryAttempt = 0
+  while (!signal.aborted) {
+    try {
+      await streamAndroidLogcat(serial, signal, line => {
+        retryAttempt = 0
+        onLine(line)
+      }, () => {
+        onConnected?.()
+      })
+    } catch (error) {
+      if (signal.aborted) return
+      if (error instanceof AndroidLogcatApiError && error.status !== undefined
+        && TERMINAL_LOGCAT_HTTP_STATUSES.has(error.status)) throw error
+    }
+    if (signal.aborted) return
+    onReconnecting?.()
+    const delayMs = Math.min(500 * 2 ** retryAttempt, MAX_RECONNECT_DELAY_MS)
+    retryAttempt = Math.min(retryAttempt + 1, 5)
+    await waitForReconnect(signal, delayMs)
+  }
 }
 
 /** Parsed Android `threadtime` fields used by filters and the row renderer. */

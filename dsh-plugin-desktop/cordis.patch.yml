@@ -20,6 +20,10 @@
       name: dsh-plugin-desktop/updates
     - id: desktop-android-logcat
       name: dsh-plugin-desktop/android-logcat
+    - id: desktop-git-review
+      name: dsh-plugin-desktop/git-review
+    - id: desktop-ide-git
+      name: dsh-ide-git
 
 # A desktop launch has no terminal operator waiting for the Web readiness line.
 - id: web-runtime

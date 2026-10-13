@@ -76,6 +76,10 @@
       "types": "./lib/types/android-logcat.d.ts",
       "default": "./lib/android-logcat.js"
     },
+    "./git-review": {
+      "types": "./lib/types/git-review.d.ts",
+      "default": "./lib/git-review.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -114,6 +118,7 @@
         "@deepseek-ai/dsh-client-ui-renderer",
         "@deepseek-ai/dsh-client-ui-settings",
         "@deepseek-ai/dsh-client-ui-theme",
+        "@deepseek-ai/dsh-client-ui-sidebar",
         "@deepseek-ai/dsh-client-ui-sidebar-files",
         "@deepseek-ai/dsh-client-ui-workspace"
       ],
@@ -156,7 +161,7 @@
     "icons:export": "node ../scripts/export-app-icons.mjs --channel beta"
   },
   "dependencies": {
-    "@agents-anywhere/dsh-bridge-next": "file:../vendor/agents-anywhere/agents-anywhere-dsh-bridge-next-2.0.3-desktop.c7fe1fce32650.r156e8f86.tgz",
+    "@agents-anywhere/dsh-bridge-next": "file:../vendor/agents-anywhere/agents-anywhere-dsh-bridge-next-2.1.0-desktop.c8378301588d0.r156e8f86.tgz",
     "@deepseek-ai/cordis": "4.0.4",
     "@deepseek-ai/cordis-plugin-group": "1.0.4",
     "@deepseek-ai/cordis-plugin-include": "1.0.9",
@@ -324,7 +329,7 @@
     "@earendil-works/pi-ai": "^0.87.1",
     "adm-zip": "^0.6.0",
     "dsh-community-market": "0.1.0-dev.0",
-    "dshmarket": "1.66.14",
+    "dshmarket": "1.66.18",
     "fs-ext": "2.1.1",
     "koffi": "3.1.5",
     "node-addon-require-builtin": "^0.1.6",
