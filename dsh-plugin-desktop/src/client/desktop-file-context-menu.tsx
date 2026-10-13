@@ -19,6 +19,11 @@ import {
   type DesktopFileMenuLocaleKey,
 } from './desktop-file-context-menu-locales.ts'
 import { relativeTreePath } from './desktop-file-context-path.ts'
+import {
+  replaceActiveFileQuery,
+  spacedFileMention,
+  type ClipboardOccurrenceRange,
+} from './desktop-file-context-insertion.ts'
 
 /** Locale namespace owned by the Desktop file-tree menu. */
 declare module '@deepseek-ai/dsh-client-ui-slots' {
@@ -34,12 +39,14 @@ interface FileTreeTarget {
   readonly path: string
   readonly relativePath: string
   readonly kind: 'file' | 'directory'
+  readonly draft: string
+  readonly occurrences: readonly ClipboardOccurrenceRange[]
   readonly insertion: ReturnType<PropsRuntime<'conversation.input.left'>['inputActions']['captureInsertion']>
 }
 
 type SessionPathRemote = Pick<ClientContext['remote']['session'], 'openWorkspacePath' | 'workspacePathApplications'>
 type Translate = (key: DesktopFileMenuLocaleKey) => string
-type SessionInputProps = Pick<PropsRuntime<'conversation.input.left'>, 'sessionId' | 'inputActions'>
+type SessionInputProps = Pick<PropsRuntime<'conversation.input.left'>, 'sessionId' | 'inputActions' | 'useInput'>
 type FileContextMenuProps = SessionInputProps & Pick<
   SessionPathRemote,
   'openWorkspacePath' | 'workspacePathApplications'
@@ -71,10 +78,12 @@ export function applyDesktopFileContextMenu(ctx: ClientContext): void {
 export function DesktopFileContextMenu({
   sessionId,
   inputActions,
+  useInput,
   openWorkspacePath,
   workspacePathApplications,
   t,
 }: FileContextMenuProps) {
+  const inputState = useInput(state => state)
   const [target, setTarget] = useState<FileTreeTarget | null>(null)
   const [notice, setNotice] = useState<{ readonly text: string; readonly sequence: number } | null>(null)
   const noticeSequence = useRef(0)
@@ -118,12 +127,18 @@ export function DesktopFileContextMenu({
         relativePath,
         sessionId: rowSessionId,
         kind,
-        insertion: inputActions.captureInsertion(),
+        draft: inputState.draft,
+        occurrences: inputState.occurrences,
+        insertion: replaceActiveFileQuery(
+          inputState.draft,
+          inputState.occurrences,
+          inputActions.captureInsertion(),
+        ),
       })
     }
     document.addEventListener('contextmenu', onContextMenu, true)
     return () => document.removeEventListener('contextmenu', onContextMenu, true)
-  }, [inputActions, sessionId])
+  }, [inputActions, inputState.draft, inputState.occurrences, sessionId])
 
   const close = (): void => setTarget(null)
   const showFailure = (): void => showNotice(t('operationFailed'))
@@ -138,7 +153,8 @@ export function DesktopFileContextMenu({
       showNotice(t('referenceUnavailable'))
       return
     }
-    const inserted = inputActions.insertText(mention, target.insertion)
+    const text = spacedFileMention(target.draft, target.occurrences, target.insertion, mention)
+    const inserted = inputActions.insertText(text, target.insertion)
     close()
     showNotice(inserted ? t('addedToTask') : t('insertFailed'))
   }
