@@ -20,6 +20,11 @@ import {
   streamAndroidLogcatWithReconnect,
 } from '../src/client/android-logcat-api.ts'
 import { createAndroidLogcatStore } from '../src/client/android-logcat-store.ts'
+import {
+  clearAndroidLogcatEntries,
+  readAndroidLogcatEntries,
+  writeAndroidLogcatEntries,
+} from '../src/client/android-logcat-log-persistence.ts'
 import { writeAndroidLogcatDisplayPreferences } from '../src/client/android-logcat-preferences.ts'
 import { installAndroidLogcatStyles } from '../src/client/android-logcat-styles.ts'
 
@@ -319,7 +324,7 @@ describe('Android Logcat slot store', () => {
     expect(store.getSnapshot().streamActive).toBe(false)
   })
 
-  it('clears device-scoped logs when switching devices or losing the selected device', () => {
+  it('retains logs when switching devices or losing the selected device', () => {
     const store = createAndroidLogcatStore().create()
     store.actions.setDevices(true, [
       { serial: 'one', state: 'device' },
@@ -335,8 +340,21 @@ describe('Android Logcat slot store', () => {
     store.actions.appendLines(['log from two'])
     store.actions.setDevices(true, [{ serial: 'one', state: 'device' }])
     expect(store.getSnapshot()).toMatchObject({
-      selectedSerial: '', entries: [], pausedEntries: null, paused: false,
+      selectedSerial: 'two', entries: [expect.objectContaining({ raw: 'log from two' })], pausedEntries: null, paused: false,
     })
+  })
+
+  it('restores persisted log bodies and deletes them only on explicit clear', () => {
+    const values = new Map<string, string>()
+    const storage = {
+      getItem: (key: string) => values.get(key) ?? null,
+      setItem: (key: string, value: string) => { values.set(key, value) },
+      removeItem: (key: string) => { values.delete(key) },
+    }
+    writeAndroidLogcatEntries('device-one', [makeAndroidLogcatEntry('persisted line', 1)], storage)
+    expect(readAndroidLogcatEntries('device-one', storage).map(entry => entry.raw)).toEqual(['persisted line'])
+    clearAndroidLogcatEntries('device-one', storage)
+    expect(readAndroidLogcatEntries('device-one', storage)).toEqual([])
   })
 
   it('retains the selected serial and logs while the active stream reconnects after device loss', () => {

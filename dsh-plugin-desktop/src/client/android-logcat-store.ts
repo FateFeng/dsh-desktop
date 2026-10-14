@@ -1,5 +1,10 @@
 import { defineStore, type EngineStoreHandle } from '@deepseek-ai/dsh-client-store'
 import {
+  clearAndroidLogcatEntries,
+  readAndroidLogcatEntries,
+  writeAndroidLogcatEntries,
+} from './android-logcat-log-persistence.ts'
+import {
   DEFAULT_ANDROID_LOGCAT_FILTER_PREFERENCES,
   readAndroidLogcatDisplayPreferences,
 } from './android-logcat-preferences.ts'
@@ -132,17 +137,10 @@ export function createAndroidLogcatStore(): EngineStoreHandle<AndroidLogcatState
         const selected = devices.find(device => device.serial === draft.selectedSerial)
         if (selected === undefined) {
           if (draft.selectedSerial !== '' && !draft.streamActive) {
-            draft.selectedSerial = ''
             draft.processes = []
             draft.selectedPids = []
             draft.selectedTags = []
-            draft.tagPattern = DEFAULT_ANDROID_LOGCAT_FILTER_PREFERENCES.tag
-            draft.excludeTagPattern = DEFAULT_ANDROID_LOGCAT_FILTER_PREFERENCES.excludeTag
-            draft.processPattern = DEFAULT_ANDROID_LOGCAT_FILTER_PREFERENCES.process
-            draft.messagePattern = DEFAULT_ANDROID_LOGCAT_FILTER_PREFERENCES.message
-            draft.entries = []
-            draft.pausedEntries = null
-            draft.paused = false
+            draft.processesError = ''
           }
         } else if ((!available || selected.state !== 'device') && !draft.streamActive) {
           draft.streamActive = false
@@ -162,8 +160,9 @@ export function createAndroidLogcatStore(): EngineStoreHandle<AndroidLogcatState
         draft.processesError = ''
         draft.streamError = ''
         draft.streamReconnecting = false
-        draft.entries = []
+        draft.entries = readAndroidLogcatEntries(serial)
         draft.pausedEntries = null
+        draft.nextEntryId = draft.entries.length + 1
         draft.paused = false
         draft.streamActive = false
       },
@@ -193,8 +192,13 @@ export function createAndroidLogcatStore(): EngineStoreHandle<AndroidLogcatState
         }
         const overflow = draft.entries.length - ANDROID_LOGCAT_MAX_ENTRIES
         if (overflow > 0) draft.entries.splice(0, overflow)
+        writeAndroidLogcatEntries(draft.selectedSerial, draft.entries)
       },
-      clear: draft => { draft.entries = []; draft.pausedEntries = draft.paused ? [] : null },
+      clear: draft => {
+        draft.entries = []
+        draft.pausedEntries = draft.paused ? [] : null
+        clearAndroidLogcatEntries(draft.selectedSerial)
+      },
       pause: draft => {
         if (draft.paused) return
         draft.paused = true
