@@ -1,28 +1,43 @@
 <p align="center"><img src="assets/fate-dev-banner.svg" alt="DSH Desktop · fate-dev community extensions: Workspace, Files, Copilot, and Logcat" width="100%"></p>
 
-<h1 align="center">fate-dev · Extended for your workflow</h1>
+<h1 align="center">fate-dev DSH Desktop</h1>
 
-<p align="center">This page covers additions maintained on fate-dev beyond upstream DSH Desktop. For the upstream product overview, visit the <a href="https://github.com/anywhere-labs/dsh-desktop">upstream project</a>.<br><a href="README.md">简体中文</a></p>
+<p align="center">A community extension of <a href="https://github.com/anywhere-labs/dsh-desktop">upstream DSH Desktop</a> for code workspaces, file review, Git, and Android debugging.</p>
 
-<p align="center"><strong>Multi-directory workspaces</strong>　·　<strong>Files shortcuts</strong>　·　<strong>GitHub Copilot</strong>　·　<strong>Android Logcat</strong>　·　<strong>Git Review</strong></p>
+## Navigation
 
----
+- [Changes from upstream](#changes-from-upstream)
+- [Screenshots](#screenshots)
+- [Local Profile plugins](#local-profile-plugins)
+- [Downloads](#downloads)
+- [Code changes / Release Note](#code-changes--release-note)
+- [Security and privacy](#security-and-privacy)
 
-## Multi-directory workspaces
+## Changes from upstream
 
-Keep multiple code directories within reach in one workspace. The primary directory remains the workspace identity and session working directory, while attached directories are available from the Files browser. Switching the browser root never silently changes the Agent's session context. Windows currently supports the primary directory only.
+One-line summary for each feature:
 
-<p align="center"><img src="assets/readme/workspace.png" alt="Switch between the primary and attached directories in Files" width="88%"></p>
+| Feature | Summary |
+| --- | --- |
+| Multi-directory workspaces | Manage the primary directory and attached code directories in one session without changing the Agent session context when browsing roots. |
+| Files tree shortcuts | Reveal files in the system manager, open them in VS Code, copy paths, or insert structured file references into a conversation. |
+| Git Review | Review committed changes for the current session and switch between authorized workspace roots. |
+| Editable Git workspace | Perform Git workspace operations in Desktop while keeping the Git panel and review directory independent. |
+| GitHub Copilot | Sign in with a GitHub device code and use available Copilot models from the model picker. |
+| Android Logcat | Select an adb device, filter live logs, pause or resume output, copy or export visible logs, and capture a device screenshot. |
+| Session and file safety | File references stay structured, and README/review screenshots contain no sessions, memory databases, credentials, or access tokens. |
 
-## Files tree shortcuts
+## Screenshots
 
-Go from the file tree straight to common actions: reveal an item in the system file manager, open it in VS Code, copy an absolute or relative path, or insert a workspace reference into an Agent conversation. Drag-and-drop inserts a structured reference; it does not upload file contents into the conversation.
+### Multi-directory workspaces
 
-<p align="center"><img src="assets/readme/files-shortcuts.png" alt="Context actions for a file-tree item" width="32%"></p>
+<img src="assets/readme/workspace.png" alt="Switch between primary and attached directories" width="88%">
 
-## Git Review and code review
+### Files tree shortcuts
 
-Git Review presents committed changes for the current session and supports switching between authorized workspace roots. The review directory and Git panel remain independent; local paths and repository details in the screenshots have been redacted.
+<img src="assets/readme/files-shortcuts.png" alt="Files tree context actions" width="32%">
+
+### Git Review and code review
 
 <table>
   <tr>
@@ -31,21 +46,17 @@ Git Review presents committed changes for the current session and supports switc
   </tr>
 </table>
 
-## GitHub Copilot sign-in and model integration
+### GitHub Copilot
 
-Authorize with a GitHub device code, then choose available Copilot models from the DSH Desktop model picker. Account connection status and the model list are presented together in model settings.
+<img src="assets/readme/copilot.png" alt="GitHub Copilot connection and available models" width="66%">
 
-<p align="center"><img src="assets/readme/copilot.png" alt="GitHub Copilot connection status and available models" width="66%"></p>
+### Android Logcat
 
-## Android Logcat integration
+<img src="assets/readme/android-logcat.png" alt="Android Logcat device selection and filters" width="100%">
 
-Select a device through adb and inspect its live Logcat stream on desktop. Narrow results by process, Tag, excluded Tags, or message regex; pause or resume display, copy or export visible logs, and capture a device screenshot.
+## Local Profile plugins
 
-<p align="center"><img src="assets/readme/android-logcat.png" alt="Android Logcat device selection and log filters" width="100%"></p>
-
-## Plugins installed in the local Desktop Profile
-
-The table below records the third-party plugins currently installed and enabled in this machine's `desktop` Profile. Versions come from the local Profile manifest; review each author's package and permissions before use.
+The following third-party plugins are currently installed and enabled in the local `desktop` Profile; versions come from the local Profile manifest.
 
 | Plugin | Version | Role |
 | --- | ---: | --- |
@@ -67,22 +78,37 @@ The table below records the third-party plugins currently installed and enabled 
 | `dsh-session-recycle-bin` | 0.4.3 | Session recycle bin |
 | `meow-memory` | 0.31.0 | Cross-session memory |
 
-## Ubuntu Stable downloads
+## Downloads
 
-The GitHub Release keeps only the Stable channel. Download the fate-dev Ubuntu x64 builds here:
+The current Release keeps only the Stable channel:
 
-| Version | AppImage | Debian / Ubuntu |
+| Version | Debian / Ubuntu | AppImage |
 | --- | --- | --- |
-| Stable 2.0.17 | [Download](https://github.com/FateFeng/dsh-desktop/releases/download/v2.0.17-fate-dev/DSH-Desktop-2.0.17-x86_64.AppImage) | [Download](https://github.com/FateFeng/dsh-desktop/releases/download/v2.0.17-fate-dev/DSH-Desktop-2.0.17-amd64.deb) |
+| Stable 2.0.17 | [Download `.deb`](https://github.com/FateFeng/dsh-desktop/releases/download/v2.0.17-fate-dev/DSH-Desktop-2.0.17-amd64.deb) | AppImage asset pending upload |
 
----
+- Release page: <https://github.com/FateFeng/dsh-desktop/releases/tag/v2.0.17-fate-dev>
+- Debian SHA-256: `2915f6ed9be7beddf42159c9553f1d1473f99b06982e663fa3236356f2a28479`
+- Verified `.deb` asset size: 242,430,032 bytes.
 
-<p align="center"><sub>README interface captures are kept in <a href="assets/readme/">assets/readme/</a>; local paths, repository details, and personal information in the review screenshots have been redacted.</sub></p>
+## Code changes / Release Note
 
-> **Security note:** screenshots and documentation do not include local sessions, the memory database, credentials, or access tokens. Continue checking new assets and build outputs before publishing so local data is never packaged into the repository or Release.
+### 2.0.17-fate-dev
 
-> **Privacy note:** the plugin list records package names and versions only; it does not record local directories, accounts, session contents, or plugin configuration.
+- `5fced936e9`: merged the Git Review worktree into `fate-dev`.
+- `f7c3d06b81`: added session-scoped Git Review with attached workspace roots.
+- `97291e91c9`: integrated editable Git workspace tools.
+- `70962df847`: fixed inserting file references at the cursor.
+- `91efd87d8d`: required absolute file paths in Assistant output.
+- `6458eff142`: persisted workspace sources and integrated Desktop workspace features.
+- `7300dd918c`: added Files tree context-menu shortcuts.
+- `de3b76afbc`: added GitHub Copilot provider support and Android Logcat filter memory.
+- `b125d0203d`: bumped Desktop versions to `2.0.17`.
+- `9765a12e67`: added README, Git Review screenshots, plugin inventory, and Stable download notes.
 
----
+## Security and privacy
+
+- Local paths, repository details, and personal information in README screenshots have been redacted.
+- The documentation records package names and versions only, not local directories, accounts, session contents, or plugin configuration.
+- Check new screenshots and build artifacts before publishing so local sessions, the memory database, credentials, or access tokens are not included in the repository or Release.
 
 <p align="center"><sub>Original interface captures are in <a href="dsh-plugin-desktop/docs/screenshots/">dsh-plugin-desktop/docs/screenshots/</a>.</sub></p>

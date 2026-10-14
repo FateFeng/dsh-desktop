@@ -1,28 +1,43 @@
 <p align="center"><img src="assets/fate-dev-banner.svg" alt="DSH Desktop · fate-dev 社区扩展：工作区、文件操作、Copilot 与 Logcat" width="100%"></p>
 
-<h1 align="center">fate-dev · 为工作流而扩展</h1>
+<h1 align="center">fate-dev DSH Desktop</h1>
 
-<p align="center">这里只展示 fate-dev 相较上游 DSH Desktop 增加的功能；上游产品介绍请见 <a href="https://github.com/anywhere-labs/dsh-desktop">上游项目</a>。<br><a href="README.en.md">Read in English</a></p>
+<p align="center">基于 <a href="https://github.com/anywhere-labs/dsh-desktop">上游 DSH Desktop</a> 的社区扩展版本，面向代码工作区、文件审阅、Git 和 Android 调试场景。</p>
 
-<p align="center"><strong>多目录工作区</strong>　·　<strong>文件树快捷操作</strong>　·　<strong>GitHub Copilot</strong>　·　<strong>Android Logcat</strong>　·　<strong>Git Review</strong></p>
+## 导航
 
----
+- [对原项目的改动](#对原项目的改动)
+- [所有效果图](#所有效果图)
+- [本地 Profile 插件](#本地-profile-插件)
+- [下载链接](#下载链接)
+- [代码改动记录 / Release Note](#代码改动记录--release-note)
+- [安全与隐私](#安全与隐私)
 
-## 多目录工作区
+## 对原项目的改动
 
-让多个代码目录在同一个工作区中触手可及：主目录继续决定工作区身份与会话工作目录，附加目录可在文件浏览器中随时切换。浏览位置变化不会悄悄改变 Agent 的会话上下文；Windows 暂仅支持主目录。
+每个功能一句话总结：
 
-<p align="center"><img src="assets/readme/workspace.png" alt="在文件浏览器中切换主目录和附加目录" width="88%"></p>
+| 功能 | 一句话总结 |
+| --- | --- |
+| 多目录工作区 | 在一个会话中管理主目录和多个附加代码目录，切换文件浏览根目录不会改变 Agent 会话上下文。 |
+| 文件树快捷操作 | 从文件树直接定位系统文件管理器、用 VS Code 打开、复制路径，或把文件/目录作为结构化引用插入对话。 |
+| Git Review | 按当前会话查看已提交变更，并在多个已授权工作区根之间切换审阅目录。 |
+| 可编辑 Git 工作区 | 在桌面端进行 Git 工作区相关操作，并将 Git 面板与代码审阅目录保持独立。 |
+| GitHub Copilot | 使用 GitHub 设备码登录，并在模型选择器中使用可用的 Copilot 模型。 |
+| Android Logcat | 通过 adb 选择设备，按进程、Tag、排除 Tag 或消息正则过滤实时日志，并支持暂停、复制、导出和设备截图。 |
+| 会话与文件安全 | 文件引用使用结构化路径，README 与审阅截图不包含 Session、记忆数据库、凭据或访问令牌。 |
 
-## 文件树快捷操作
+## 所有效果图
 
-从文件树直接进入常用操作：在系统文件管理器中定位、用 VS Code 打开、复制绝对或相对路径，或将文件/目录作为工作区引用插入 Agent 对话。拖放传递的是结构化引用，不会把文件内容上传到对话。
+### 多目录工作区
 
-<p align="center"><img src="assets/readme/files-shortcuts.png" alt="文件树项目的快捷操作菜单" width="32%"></p>
+<img src="assets/readme/workspace.png" alt="在文件浏览器中切换主目录和附加目录" width="88%">
 
-## Git Review 与代码审阅
+### 文件树快捷操作
 
-Git Review 按当前会话展示已提交的变更，并支持在多个已授权工作区根之间切换。审阅目录和 Git 面板彼此独立，界面中的本地路径与仓库信息已做脱敏处理。
+<img src="assets/readme/files-shortcuts.png" alt="文件树项目的快捷操作菜单" width="32%">
+
+### Git Review 与代码审阅
 
 <table>
   <tr>
@@ -31,21 +46,17 @@ Git Review 按当前会话展示已提交的变更，并支持在多个已授权
   </tr>
 </table>
 
-## GitHub Copilot 登录与模型接入
+### GitHub Copilot
 
-使用 GitHub 设备码完成授权，再从 DSH Desktop 的模型选择器中选用可用的 Copilot 模型；账号连接状态和模型列表集中显示在模型设置中。
+<img src="assets/readme/copilot.png" alt="GitHub Copilot 连接状态与可用模型" width="66%">
 
-<p align="center"><img src="assets/readme/copilot.png" alt="GitHub Copilot 连接状态与可用模型" width="66%"></p>
+### Android Logcat
 
-## Android Logcat 集成
+<img src="assets/readme/android-logcat.png" alt="Android Logcat 设备选择与日志过滤面板" width="100%">
 
-在桌面端通过 adb 选择设备并查看实时 Logcat。按进程、Tag、排除 Tag 和消息正则收窄日志；暂停/继续显示、复制或导出当前可见内容，并可直接抓取设备截图。
+## 本地 Profile 插件
 
-<p align="center"><img src="assets/readme/android-logcat.png" alt="Android Logcat 设备选择与日志过滤面板" width="100%"></p>
-
-## 本地 Desktop Profile 中已安装的插件
-
-下面是本机 `desktop` Profile 当前安装并启用的第三方插件清单。版本号来自本地 Profile manifest；插件由各自作者维护，安装与权限应在使用前自行审阅。
+下面是本机 `desktop` Profile 当前安装并启用的第三方插件；版本号来自本地 Profile manifest。
 
 | 插件 | 版本 | 用途 |
 | --- | ---: | --- |
@@ -67,22 +78,37 @@ Git Review 按当前会话展示已提交的变更，并支持在多个已授权
 | `dsh-session-recycle-bin` | 0.4.3 | 会话回收站 |
 | `meow-memory` | 0.31.0 | 跨会话记忆 |
 
-## Ubuntu Stable 安装包
+## 下载链接
 
-当前 GitHub Release 只保留 Stable，下载 fate-dev 构建的 Ubuntu x64 安装包：
+当前 Release 只保留 Stable 通道：
 
-| 版本 | AppImage | Debian / Ubuntu |
+| 版本 | Debian / Ubuntu | AppImage |
 | --- | --- | --- |
-| Stable 2.0.17 | [下载](https://github.com/FateFeng/dsh-desktop/releases/download/v2.0.17-fate-dev/DSH-Desktop-2.0.17-x86_64.AppImage) | [下载](https://github.com/FateFeng/dsh-desktop/releases/download/v2.0.17-fate-dev/DSH-Desktop-2.0.17-amd64.deb) |
+| Stable 2.0.17 | [下载 `.deb`](https://github.com/FateFeng/dsh-desktop/releases/download/v2.0.17-fate-dev/DSH-Desktop-2.0.17-amd64.deb) | AppImage 资产待上传 |
 
----
+- Release 页面：<https://github.com/FateFeng/dsh-desktop/releases/tag/v2.0.17-fate-dev>
+- Debian SHA-256：`2915f6ed9be7beddf42159c9553f1d1473f99b06982e663fa3236356f2a28479`
+- 当前已验证 `.deb` 资产大小：242,430,032 bytes。
 
-<p align="center"><sub>README 使用的界面截图位于 <a href="assets/readme/">assets/readme/</a>；审阅截图中的本地路径、仓库细节和个人信息已脱敏。</sub></p>
+## 代码改动记录 / Release Note
 
-> **安全提示**：截图和文档不会包含本地 Session、记忆数据库、凭据或访问令牌。发布前请继续检查新增资产与构建产物，避免把本地数据打包进仓库或 Release。
+### 2.0.17-fate-dev
 
-> **隐私说明**：README 中的插件清单仅记录包名与版本，不记录本机目录、账号、Session 内容或插件配置。
+- `5fced936e9`：将 Git Review worktree 合并到 `fate-dev`。
+- `f7c3d06b81`：新增按会话隔离的 Git Review，并支持附加工作区根。
+- `97291e91c9`：接入可编辑 Git 工作区工具。
+- `70962df847`：修复在光标位置插入文件引用。
+- `91efd87d8d`：要求 Assistant 输出绝对文件路径。
+- `6458eff142`：保存 workspace sources，并整合 Desktop workspace 功能。
+- `7300dd918c`：新增文件树上下文菜单快捷操作。
+- `de3b76afbc`：加入 GitHub Copilot provider 支持与 Android Logcat 过滤记忆。
+- `b125d0203d`：更新 Desktop 版本至 `2.0.17`。
+- `9765a12e67`：补充 README、Git Review 效果图、插件清单与 Stable 下载说明。
 
----
+## 安全与隐私
+
+- README 截图中的本地路径、仓库细节和个人信息已脱敏。
+- 文档只记录插件包名和版本，不记录本机目录、账号、Session 内容或插件配置。
+- 发布前应继续检查新增截图和构建产物，避免把本地 Session、记忆数据库、凭据或访问令牌放入仓库或 Release。
 
 <p align="center"><sub>原始界面截图位于 <a href="dsh-plugin-desktop/docs/screenshots/">dsh-plugin-desktop/docs/screenshots/</a>。</sub></p>
