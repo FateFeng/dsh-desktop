@@ -31,28 +31,28 @@ One-line summary for each feature:
 
 ### Multi-directory workspaces
 
-<img src="assets/readme/workspace.png" alt="Switch between primary and attached directories" width="88%">
+<p align="center"><img src="assets/readme/workspace.png" alt="Switch between primary and attached directories" width="78%"></p>
 
 ### Files tree shortcuts
 
-<img src="assets/readme/files-shortcuts.png" alt="Files tree context actions" width="32%">
+<p align="center"><img src="assets/readme/files-shortcuts.png" alt="Files tree context actions" width="28%"></p>
 
 ### Git Review and code review
 
 <table>
   <tr>
-    <td width="50%"><img src="assets/readme/code-review.png" alt="Code review directory and multiple workspace roots" width="100%"></td>
-    <td width="50%"><img src="assets/readme/git-review.png" alt="Git Review changes and commit graph" width="100%"></td>
+    <td width="43%"><img src="assets/readme/code-review.png" alt="Code review directory and multiple workspace roots" width="100%"></td>
+    <td width="57%"><img src="assets/readme/git-review.png" alt="Git Review changes and commit graph" width="100%"></td>
   </tr>
 </table>
 
 ### GitHub Copilot
 
-<img src="assets/readme/copilot.png" alt="GitHub Copilot connection and available models" width="66%">
+<p align="center"><img src="assets/readme/copilot.png" alt="GitHub Copilot connection and available models" width="58%"></p>
 
 ### Android Logcat
 
-<img src="assets/readme/android-logcat.png" alt="Android Logcat device selection and filters" width="100%">
+<p align="center"><img src="assets/readme/android-logcat.png" alt="Android Logcat device selection and filters" width="88%"></p>
 
 ## Local Profile plugins
 

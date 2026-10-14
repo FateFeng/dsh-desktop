@@ -31,28 +31,28 @@
 
 ### 多目录工作区
 
-<img src="assets/readme/workspace.png" alt="在文件浏览器中切换主目录和附加目录" width="88%">
+<p align="center"><img src="assets/readme/workspace.png" alt="在文件浏览器中切换主目录和附加目录" width="78%"></p>
 
 ### 文件树快捷操作
 
-<img src="assets/readme/files-shortcuts.png" alt="文件树项目的快捷操作菜单" width="32%">
+<p align="center"><img src="assets/readme/files-shortcuts.png" alt="文件树项目的快捷操作菜单" width="28%"></p>
 
 ### Git Review 与代码审阅
 
 <table>
   <tr>
-    <td width="50%"><img src="assets/readme/code-review.png" alt="代码审阅目录与多工作区根选择" width="100%"></td>
-    <td width="50%"><img src="assets/readme/git-review.png" alt="Git Review 变更列表与提交图" width="100%"></td>
+    <td width="43%"><img src="assets/readme/code-review.png" alt="代码审阅目录与多工作区根选择" width="100%"></td>
+    <td width="57%"><img src="assets/readme/git-review.png" alt="Git Review 变更列表与提交图" width="100%"></td>
   </tr>
 </table>
 
 ### GitHub Copilot
 
-<img src="assets/readme/copilot.png" alt="GitHub Copilot 连接状态与可用模型" width="66%">
+<p align="center"><img src="assets/readme/copilot.png" alt="GitHub Copilot 连接状态与可用模型" width="58%"></p>
 
 ### Android Logcat
 
-<img src="assets/readme/android-logcat.png" alt="Android Logcat 设备选择与日志过滤面板" width="100%">
+<p align="center"><img src="assets/readme/android-logcat.png" alt="Android Logcat 设备选择与日志过滤面板" width="88%"></p>
 
 ## 本地 Profile 插件
 
