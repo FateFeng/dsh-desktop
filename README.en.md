@@ -27,33 +27,6 @@ One-line summary for each feature:
 | Android Logcat | Select an adb device, filter live logs, pause or resume output, copy or export visible logs, and capture a device screenshot. |
 | Session and file safety | File references stay structured, and README/review screenshots contain no sessions, memory databases, credentials, or access tokens. |
 
-## Screenshots
-
-### Multi-directory workspaces
-
-<p align="center"><img src="assets/readme/workspace.png" alt="Switch between primary and attached directories" width="78%"></p>
-
-### Files tree shortcuts
-
-<p align="center"><img src="assets/readme/files-shortcuts.png" alt="Files tree context actions" width="28%"></p>
-
-### Git Review and code review
-
-<table>
-  <tr>
-    <td width="43%"><img src="assets/readme/code-review.png" alt="Code review directory and multiple workspace roots" width="100%"></td>
-    <td width="57%"><img src="assets/readme/git-review.png" alt="Git Review changes and commit graph" width="100%"></td>
-  </tr>
-</table>
-
-### GitHub Copilot
-
-<p align="center"><img src="assets/readme/copilot.png" alt="GitHub Copilot connection and available models" width="58%"></p>
-
-### Android Logcat
-
-<p align="center"><img src="assets/readme/android-logcat.png" alt="Android Logcat device selection and filters" width="88%"></p>
-
 ## Local Profile plugins
 
 The following third-party plugins are currently installed and enabled in the local `desktop` Profile; versions come from the local Profile manifest.
@@ -112,5 +85,32 @@ This project will no longer distribute AppImage builds; only the verifiable Debi
 - Local paths, repository details, and personal information in README screenshots have been redacted.
 - The documentation records package names and versions only, not local directories, accounts, session contents, or plugin configuration.
 - Check new screenshots and build artifacts before publishing so local sessions, the memory database, credentials, or access tokens are not included in the repository or Release.
+
+## Screenshots
+
+### Multi-directory workspaces
+
+<p align="center"><img src="assets/readme/workspace.png" alt="Switch between primary and attached directories" width="78%"></p>
+
+### Files tree shortcuts
+
+<p align="center"><img src="assets/readme/files-shortcuts.png" alt="Files tree context actions" width="28%"></p>
+
+### Git Review and code review
+
+<table>
+  <tr>
+    <td width="43%"><img src="assets/readme/code-review.png" alt="Code review directory and multiple workspace roots" width="100%"></td>
+    <td width="57%"><img src="assets/readme/git-review.png" alt="Git Review changes and commit graph" width="100%"></td>
+  </tr>
+</table>
+
+### GitHub Copilot
+
+<p align="center"><img src="assets/readme/copilot.png" alt="GitHub Copilot connection and available models" width="58%"></p>
+
+### Android Logcat
+
+<p align="center"><img src="assets/readme/android-logcat.png" alt="Android Logcat device selection and filters" width="88%"></p>
 
 <p align="center"><sub>Original interface captures are in <a href="dsh-plugin-desktop/docs/screenshots/">dsh-plugin-desktop/docs/screenshots/</a>.</sub></p>

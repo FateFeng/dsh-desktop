@@ -27,33 +27,6 @@
 | Android Logcat | 通过 adb 选择设备，按进程、Tag、排除 Tag 或消息正则过滤实时日志，并支持暂停、复制、导出和设备截图。 |
 | 会话与文件安全 | 文件引用使用结构化路径，README 与审阅截图不包含 Session、记忆数据库、凭据或访问令牌。 |
 
-## 所有效果图
-
-### 多目录工作区
-
-<p align="center"><img src="assets/readme/workspace.png" alt="在文件浏览器中切换主目录和附加目录" width="78%"></p>
-
-### 文件树快捷操作
-
-<p align="center"><img src="assets/readme/files-shortcuts.png" alt="文件树项目的快捷操作菜单" width="28%"></p>
-
-### Git Review 与代码审阅
-
-<table>
-  <tr>
-    <td width="43%"><img src="assets/readme/code-review.png" alt="代码审阅目录与多工作区根选择" width="100%"></td>
-    <td width="57%"><img src="assets/readme/git-review.png" alt="Git Review 变更列表与提交图" width="100%"></td>
-  </tr>
-</table>
-
-### GitHub Copilot
-
-<p align="center"><img src="assets/readme/copilot.png" alt="GitHub Copilot 连接状态与可用模型" width="58%"></p>
-
-### Android Logcat
-
-<p align="center"><img src="assets/readme/android-logcat.png" alt="Android Logcat 设备选择与日志过滤面板" width="88%"></p>
-
 ## 本地 Profile 插件
 
 下面是本机 `desktop` Profile 当前安装并启用的第三方插件；版本号来自本地 Profile manifest。
@@ -112,5 +85,32 @@
 - README 截图中的本地路径、仓库细节和个人信息已脱敏。
 - 文档只记录插件包名和版本，不记录本机目录、账号、Session 内容或插件配置。
 - 发布前应继续检查新增截图和构建产物，避免把本地 Session、记忆数据库、凭据或访问令牌放入仓库或 Release。
+
+## 所有效果图
+
+### 多目录工作区
+
+<p align="center"><img src="assets/readme/workspace.png" alt="在文件浏览器中切换主目录和附加目录" width="78%"></p>
+
+### 文件树快捷操作
+
+<p align="center"><img src="assets/readme/files-shortcuts.png" alt="文件树项目的快捷操作菜单" width="28%"></p>
+
+### Git Review 与代码审阅
+
+<table>
+  <tr>
+    <td width="43%"><img src="assets/readme/code-review.png" alt="代码审阅目录与多工作区根选择" width="100%"></td>
+    <td width="57%"><img src="assets/readme/git-review.png" alt="Git Review 变更列表与提交图" width="100%"></td>
+  </tr>
+</table>
+
+### GitHub Copilot
+
+<p align="center"><img src="assets/readme/copilot.png" alt="GitHub Copilot 连接状态与可用模型" width="58%"></p>
+
+### Android Logcat
+
+<p align="center"><img src="assets/readme/android-logcat.png" alt="Android Logcat 设备选择与日志过滤面板" width="88%"></p>
 
 <p align="center"><sub>原始界面截图位于 <a href="dsh-plugin-desktop/docs/screenshots/">dsh-plugin-desktop/docs/screenshots/</a>。</sub></p>
