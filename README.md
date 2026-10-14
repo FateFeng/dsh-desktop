@@ -82,9 +82,11 @@
 
 当前 Release 只保留 Stable 通道：
 
-| 版本 | Debian / Ubuntu | AppImage |
-| --- | --- | --- |
-| Stable 2.0.17 | [下载 `.deb`](https://github.com/FateFeng/dsh-desktop/releases/download/v2.0.17-fate-dev/DSH-Desktop-2.0.17-amd64.deb) | AppImage 资产待上传 |
+| 版本 | Debian / Ubuntu |
+| --- | --- |
+| Stable 2.0.17 | [下载 `.deb`](https://github.com/FateFeng/dsh-desktop/releases/download/v2.0.17-fate-dev/DSH-Desktop-2.0.17-amd64.deb) |
+
+本项目后续不再分发 AppImage，仅维护可验证的 Debian / Ubuntu Stable 安装包。
 
 - Release 页面：<https://github.com/FateFeng/dsh-desktop/releases/tag/v2.0.17-fate-dev>
 - Debian SHA-256：`2915f6ed9be7beddf42159c9553f1d1473f99b06982e663fa3236356f2a28479`

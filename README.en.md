@@ -82,9 +82,11 @@ The following third-party plugins are currently installed and enabled in the loc
 
 The current Release keeps only the Stable channel:
 
-| Version | Debian / Ubuntu | AppImage |
-| --- | --- | --- |
-| Stable 2.0.17 | [Download `.deb`](https://github.com/FateFeng/dsh-desktop/releases/download/v2.0.17-fate-dev/DSH-Desktop-2.0.17-amd64.deb) | AppImage asset pending upload |
+| Version | Debian / Ubuntu |
+| --- | --- |
+| Stable 2.0.17 | [Download `.deb`](https://github.com/FateFeng/dsh-desktop/releases/download/v2.0.17-fate-dev/DSH-Desktop-2.0.17-amd64.deb) |
+
+This project will no longer distribute AppImage builds; only the verifiable Debian / Ubuntu Stable package is maintained.
 
 - Release page: <https://github.com/FateFeng/dsh-desktop/releases/tag/v2.0.17-fate-dev>
 - Debian SHA-256: `2915f6ed9be7beddf42159c9553f1d1473f99b06982e663fa3236356f2a28479`
