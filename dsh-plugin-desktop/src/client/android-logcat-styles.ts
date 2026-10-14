@@ -1,4 +1,22 @@
 const STYLE_ID = 'dsh-android-logcat-styles'
+const OPAQUE_LAYER_1 = '--dsh-android-logcat-bg-layer-1'
+const OPAQUE_LAYER_2 = '--dsh-android-logcat-bg-layer-2'
+
+function resolveOpaqueThemeColor(token: string, fallback: string): string {
+  const body = document.body
+  if (body === null || body === undefined) return fallback
+  const raw = getComputedStyle(body).getPropertyValue(token).trim()
+  if (raw === '') return fallback
+  const probe = document.createElement('span')
+  probe.style.color = raw
+  if (probe.style.color === '') return fallback
+  body.appendChild(probe)
+  const normalized = getComputedStyle(probe).color
+  probe.remove()
+  const components = normalized.match(/rgba?\(([^)]+)\)/i)?.[1]?.replaceAll(',', ' ').replace('/', ' ').trim().split(/\s+/u)
+  if (components === undefined || components.length < 3) return fallback
+  return `rgb(${components.slice(0, 3).join(' ')})`
+}
 
 const CSS = `
 .dshAndroidLogcatLauncher { width: max-content; max-width: 100%; min-width: 0; align-self: flex-start; justify-content: flex-start; margin-inline-start: 0; padding-inline: 0; }
@@ -18,7 +36,7 @@ const CSS = `
   border: 1px solid var(--dsw-alias-border-l1);
   border-bottom: 0;
   border-radius: 12px 12px 0 0;
-  background: var(--dsw-alias-bg-layer-1);
+  background: var(--dsh-android-logcat-bg-layer-1);
   color: var(--dsw-alias-label-primary);
   box-shadow: 0 -12px 40px rgba(0, 0, 0, .24);
   font: var(--dsh-android-logcat-ui-font-size, 12px)/1.45 var(--dsw-font-family, system-ui, sans-serif);
@@ -60,7 +78,7 @@ const CSS = `
   gap: 12px;
   padding: 5px 12px 5px 16px;
   border-bottom: 1px solid var(--dsw-alias-border-l1);
-  background: var(--dsw-alias-bg-layer-2);
+  background: var(--dsh-android-logcat-bg-layer-2);
   user-select: none;
 }
 .dshAndroidLogcatHeading { display: flex; min-width: 0; align-items: baseline; gap: 10px; }
@@ -80,7 +98,7 @@ const CSS = `
   padding: 4px 8px;
   border: 1px solid var(--dsw-alias-border-l1);
   border-radius: 6px;
-  background: var(--dsw-alias-bg-layer-2);
+  background: var(--dsh-android-logcat-bg-layer-2);
   color: inherit;
   cursor: pointer;
   font: inherit;
@@ -110,7 +128,7 @@ const CSS = `
   gap: 7px;
   padding: 6px 10px;
   border-bottom: 1px solid var(--dsw-alias-border-l1);
-  background: var(--dsw-alias-bg-layer-1);
+  background: var(--dsh-android-logcat-bg-layer-1);
 }
 .dshAndroidLogcatField,
 .dshAndroidLogcatPatternField { display: flex; min-width: 110px; flex: 0 1 205px; flex-direction: column; gap: 3px; }
@@ -124,7 +142,7 @@ const CSS = `
   padding: 3px 8px;
   border: 1px solid var(--dsw-alias-border-l1);
   border-radius: 6px;
-  background: var(--dsw-alias-bg-layer-1);
+  background: var(--dsh-android-logcat-bg-layer-1);
   color: inherit;
   font: inherit;
 }
@@ -137,17 +155,17 @@ const CSS = `
 .dshAndroidLogcatFollowToggle { display: inline-flex; min-height: 28px; align-items: center; gap: 6px; color: var(--dsw-alias-label-secondary); white-space: nowrap; }
 .dshAndroidLogcatFollowToggle input { accent-color: var(--dsw-alias-brand-primary); }
 .dshAndroidLogcatMultiFilter { position: relative; flex: 0 0 auto; }
-.dshAndroidLogcatMultiFilter summary { display: flex; min-height: 28px; box-sizing: border-box; align-items: center; padding: 4px 9px; border: 1px solid var(--dsw-alias-border-l1); border-radius: 6px; background: var(--dsw-alias-bg-layer-1); cursor: pointer; list-style: none; white-space: nowrap; }
+.dshAndroidLogcatMultiFilter summary { display: flex; min-height: 28px; box-sizing: border-box; align-items: center; padding: 4px 9px; border: 1px solid var(--dsw-alias-border-l1); border-radius: 6px; background: var(--dsh-android-logcat-bg-layer-1); cursor: pointer; list-style: none; white-space: nowrap; }
 .dshAndroidLogcatMultiFilter summary::-webkit-details-marker { display: none; }
 .dshAndroidLogcatMultiFilter[data-disabled] summary { cursor: not-allowed; opacity: .55; }
-.dshAndroidLogcatMultiFilterMenu { position: absolute; z-index: 5; top: calc(100% + 4px); left: 0; display: flex; min-width: 190px; max-height: 240px; flex-direction: column; gap: 2px; overflow: auto; padding: 6px; border: 1px solid var(--dsw-alias-border-l1); border-radius: 7px; background: var(--dsw-alias-bg-layer-1); box-shadow: 0 8px 24px rgba(0, 0, 0, .5); }
+.dshAndroidLogcatMultiFilterMenu { position: absolute; z-index: 5; top: calc(100% + 4px); left: 0; display: flex; min-width: 190px; max-height: 240px; flex-direction: column; gap: 2px; overflow: auto; padding: 6px; border: 1px solid var(--dsw-alias-border-l1); border-radius: 7px; background: var(--dsh-android-logcat-bg-layer-1); box-shadow: 0 8px 24px rgba(0, 0, 0, .5); }
 .dshAndroidLogcatMultiFilterMenu label { display: flex; min-height: 26px; align-items: center; gap: 7px; padding: 2px 5px; border-radius: 4px; cursor: pointer; }
 .dshAndroidLogcatMultiFilterMenu label:hover { background: var(--dsw-alias-interactive-bg-hover); }
 .dshAndroidLogcatMultiFilterMenu input { accent-color: var(--dsw-alias-brand-primary); }
 .dshAndroidLogcatMultiFilterMenu span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dshAndroidLogcatDisplaySettings { display: flex; flex: 0 0 auto; align-items: center; flex-wrap: wrap; gap: 8px 14px; padding: 5px 12px; border-bottom: 1px solid var(--dsw-alias-border-l1); background: var(--dsw-alias-bg-layer-1); }
+.dshAndroidLogcatDisplaySettings { display: flex; flex: 0 0 auto; align-items: center; flex-wrap: wrap; gap: 8px 14px; padding: 5px 12px; border-bottom: 1px solid var(--dsw-alias-border-l1); background: var(--dsh-android-logcat-bg-layer-1); }
 .dshAndroidLogcatDisplayField { display: inline-flex; align-items: center; gap: 6px; color: var(--dsw-alias-label-secondary); }
-.dshAndroidLogcatDisplayField select { min-height: 26px; padding: 2px 6px; border: 1px solid var(--dsw-alias-border-l1); border-radius: 5px; background: var(--dsw-alias-bg-layer-1); color: inherit; font: inherit; }
+.dshAndroidLogcatDisplayField select { min-height: 26px; padding: 2px 6px; border: 1px solid var(--dsw-alias-border-l1); border-radius: 5px; background: var(--dsh-android-logcat-bg-layer-1); color: inherit; font: inherit; }
 .dshAndroidLogcatTipsToggle { display: inline-flex; align-items: center; gap: 6px; color: var(--dsw-alias-label-secondary); cursor: pointer; }
 .dshAndroidLogcatTipsToggle input { accent-color: var(--dsw-alias-brand-primary); }
 .dshAndroidLogcatFilterHelp { display: flex; flex: 0 0 auto; flex-direction: column; gap: 2px; padding: 3px 12px 6px; color: var(--dsw-alias-label-secondary); font-size: .83em; }
@@ -155,9 +173,9 @@ const CSS = `
 .dshAndroidLogcatFilterHelp strong { color: var(--dsw-alias-label-primary); font-size: 1.1em; }
 .dshAndroidLogcatFilterError { margin: 0; padding: 0; color: var(--dsw-alias-state-error-primary) !important; font-size: .83em; font-weight: 500; }
 .dshAndroidLogcatScreenshotBackdrop { position: fixed; z-index: 2147483647; inset: 0; display: grid; place-items: center; padding: 16px; background: var(--dsw-alias-bg-mask-photo); }
-.dshAndroidLogcatScreenshotDialog { display: flex; width: min(900px, 96vw); max-height: 94vh; flex-direction: column; overflow: hidden; border: 1px solid var(--dsw-alias-border-l2); border-radius: 10px; background: var(--dsw-alias-bg-layer-2); box-shadow: 0 18px 60px rgba(0, 0, 0, .7); color: var(--dsw-alias-label-primary); }
+.dshAndroidLogcatScreenshotDialog { display: flex; width: min(900px, 96vw); max-height: 94vh; flex-direction: column; overflow: hidden; border: 1px solid var(--dsw-alias-border-l2); border-radius: 10px; background: var(--dsh-android-logcat-bg-layer-2); box-shadow: 0 18px 60px rgba(0, 0, 0, .7); color: var(--dsw-alias-label-primary); }
 .dshAndroidLogcatScreenshotDialog header,
-.dshAndroidLogcatScreenshotDialog footer { display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; background: var(--dsw-alias-bg-layer-2); }
+.dshAndroidLogcatScreenshotDialog footer { display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; background: var(--dsh-android-logcat-bg-layer-2); }
 .dshAndroidLogcatScreenshotDialog img { min-height: 0; max-width: 100%; flex: 1 1 auto; object-fit: contain; }
 .dshAndroidLogcatScreenshotDialog footer { justify-content: flex-end; }
 .dshAndroidLogcatScreenshotDialog a { text-decoration: none; }
@@ -172,7 +190,7 @@ const CSS = `
   flex: 1 1 auto;
   overflow: auto;
   padding: 4px 0;
-  background: var(--dsw-alias-bg-layer-1);
+  background: var(--dsh-android-logcat-bg-layer-1);
   scrollbar-gutter: stable;
   overscroll-behavior: contain;
   font: var(--dsh-android-logcat-log-font-size, 12px)/1.55 var(--dsw-mono-font-family, ui-monospace, SFMono-Regular, Consolas, monospace);
@@ -214,7 +232,19 @@ export function installAndroidLogcatStyles(owner: string): () => void {
   style.id = STYLE_ID
   style.dataset.plugin = owner
   style.dataset.pluginCss = `${owner}/android-logcat`
-  style.textContent = CSS
+  const isDark = () => document.body?.hasAttribute('data-ds-dark-theme') ?? false
+  const refreshOpaqueThemeColors = () => {
+    const dark = isDark()
+    const layer1 = resolveOpaqueThemeColor('--dsw-alias-bg-layer-1', dark ? 'rgb(35 35 36)' : 'rgb(249 250 251)')
+    const layer2 = resolveOpaqueThemeColor('--dsw-alias-bg-layer-2', dark ? 'rgb(44 44 46)' : 'rgb(249 250 251)')
+    style.textContent = `:root { ${OPAQUE_LAYER_1}: ${layer1}; ${OPAQUE_LAYER_2}: ${layer2}; }\n${CSS}`
+  }
+  refreshOpaqueThemeColors()
   document.head.appendChild(style)
-  return () => { style.remove() }
+  const themeRoot = document.body ?? document.documentElement
+  const observer = typeof MutationObserver === 'undefined' || themeRoot === undefined
+    ? null
+    : new MutationObserver(refreshOpaqueThemeColors)
+  observer?.observe(themeRoot, { attributes: true, attributeFilter: ['data-ds-dark-theme', 'class'] })
+  return () => { observer?.disconnect(); style.remove() }
 }
